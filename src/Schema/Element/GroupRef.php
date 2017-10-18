@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 namespace GoetasWebservices\XML\XSDReader\Schema\Element;
 
 use BadMethodCallException;
@@ -28,56 +29,40 @@ class GroupRef extends Group implements InterfaceSetMinMax
         $this->wrapped = $group;
     }
 
-    /**
-    * @return int
-    */
-    public function getMin()
+    public function getMin() : int
     {
         return $this->min;
     }
 
     /**
-    * @param int $min
-    *
     * @return $this
     */
-    public function setMin($min)
+    public function setMin(int $min) : self
     {
         $this->min = $min;
         return $this;
     }
 
-    /**
-    * @return int
-    */
-    public function getMax()
+    public function getMax() : int
     {
         return $this->max;
     }
 
     /**
-    * @param int $max
-    *
     * @return $this
     */
-    public function setMax($max)
+    public function setMax(int $max) : self
     {
         $this->max = $max;
         return $this;
     }
 
-    /**
-    * @return string
-    */
-    public function getName()
+    public function getName() : string
     {
         return $this->wrapped->getName();
     }
 
-    /**
-    * @param string $name
-    */
-    public function setName($name)
+    public function setName(string $name) : void
     {
         throw new BadMethodCallException("Can't set the name for a ref group");
     }
@@ -85,7 +70,7 @@ class GroupRef extends Group implements InterfaceSetMinMax
     /**
     * @return ElementItem[]
     */
-    public function getElements()
+    public function getElements() : array
     {
         $elements = $this->wrapped->getElements();
         if($this->getMax()>0 || $this->getMax()===-1){
@@ -101,16 +86,15 @@ class GroupRef extends Group implements InterfaceSetMinMax
         return $elements;
     }
 
-    public function addElement(ElementItem $element)
+    public function addElement(ElementItem $element) : void
     {
         throw new BadMethodCallException("Can't add an element for a ref group");
     }
 
-    /**
-    * @return GroupRef
-    */
-    public static function loadGroupRef(Group $referenced, DOMElement $node)
-    {
+    public static function loadGroupRef(
+        Group $referenced,
+        DOMElement $node
+    ) : self {
         $ref = new GroupRef($referenced);
         $ref->setDoc(SchemaReader::getDocumentation($node));
 

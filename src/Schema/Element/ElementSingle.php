@@ -1,35 +1,24 @@
 <?php
+declare(strict_types = 1);
 namespace GoetasWebservices\XML\XSDReader\Schema\Element;
+
+use GoetasWebservices\XML\XSDReader\Schema\Type\Type;
 
 interface ElementSingle extends ElementItem, InterfaceSetMinMax
 {
+    public function getType() : ? Type;
+
+    public function isQualified() : bool;
 
     /**
-     * @return \GoetasWebservices\XML\XSDReader\Schema\Type\Type
-     */
-    public function getType();
+    * @return $this
+    */
+    public function setQualified(bool $qualified) : self;
+
+    public function isNil() : bool;
 
     /**
-     *
-     * @return bool
-     */
-    public function isQualified();
-
-    /**
-     *
-     * @param boolean $qualified
-     */
-    public function setQualified($qualified);
-
-    /**
-     *
-     * @return bool
-     */
-    public function isNil();
-
-    /**
-     *
-     * @param boolean $nil
-     */
-    public function setNil($nil);
+    * @return $this
+    */
+    public function setNil(bool $nil) : self;
 }

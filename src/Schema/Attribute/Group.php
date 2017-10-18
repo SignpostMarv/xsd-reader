@@ -1,6 +1,8 @@
 <?php
+declare(strict_types = 1);
 namespace GoetasWebservices\XML\XSDReader\Schema\Attribute;
 
+use Closure;
 use DOMElement;
 use GoetasWebservices\XML\XSDReader\SchemaReader;
 use GoetasWebservices\XML\XSDReader\Schema\Schema;
@@ -17,56 +19,42 @@ class Group implements AttributeItem, AttributeContainer
     protected $schema;
 
     /**
-    * @var string|null
+    * @var string
     */
-    protected $doc;
+    protected $doc = '';
 
-    /**
-    * @param string $name
-    */
-    public function __construct(Schema $schema, $name)
+    public function __construct(Schema $schema, string $name)
     {
         $this->schema = $schema;
         $this->name = $name;
     }
 
-    /**
-    * @return string|null
-    */
-    public function getDoc()
+    public function getDoc() : string
     {
         return $this->doc;
     }
 
     /**
-    * @param string $doc
-    *
     * @return $this
     */
-    public function setDoc($doc)
+    public function setDoc(string $doc) : self
     {
         $this->doc = $doc;
         return $this;
     }
 
-    /**
-    * @return Schema
-    */
-    public function getSchema()
+    public function getSchema() : Schema
     {
         return $this->schema;
     }
 
-    /**
-    * @param string $attr
-    */
     public static function findSomethingLikeThis(
         SchemaReader $useThis,
         Schema $schema,
         DOMElement $node,
         DOMElement $childNode,
         AttributeContainer $addToThis
-    ) {
+    ) : void {
         /**
         * @var AttributeItem $attribute
         */
@@ -74,19 +62,21 @@ class Group implements AttributeItem, AttributeContainer
         $addToThis->addAttribute($attribute);
     }
 
-    /**
-    * @return \Closure
-    */
     public static function loadAttributeGroup(
         SchemaReader $schemaReader,
         Schema $schema,
         DOMElement $node
-    ) {
+    ) : Closure {
         $attGroup = new self($schema, $node->getAttribute("name"));
         $attGroup->setDoc(SchemaReader::getDocumentation($node));
         $schema->addAttributeGroup($attGroup);
 
-        return function () use ($schemaReader, $schema, $node, $attGroup) {
+        return function () use (
+            $schemaReader,
+            $schema,
+            $node,
+            $attGroup
+        ) : void {
             foreach ($node->childNodes as $childNode) {
                 switch ($childNode->localName) {
                     case 'attribute':

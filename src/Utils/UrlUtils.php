@@ -1,16 +1,13 @@
 <?php
+declare(strict_types = 1);
 namespace GoetasWebservices\XML\XSDReader\Utils;
 
 class UrlUtils
 {
-    /**
-    * @param string $base
-    * @param string $rel
-    *
-    * @return string
-    */
-    public static function resolveRelativeUrl($base, $rel)
-    {
+    public static function resolveRelativeUrl(
+        string $base,
+        string $rel
+    ) : string {
         if (!$rel) {
             return $base;
         } elseif (
@@ -35,14 +32,10 @@ class UrlUtils
         return static::resolveRelativeUrlAfterEarlyChecks($base, $rel);
     }
 
-    /**
-    * @param string $base
-    * @param string $rel
-    *
-    * @return string
-    */
-    protected static function resolveRelativeUrlAfterEarlyChecks($base, $rel)
-    {
+    protected static function resolveRelativeUrlAfterEarlyChecks(
+        string $base,
+        string $rel
+    ) : string {
         /* fix url file for Windows */
         $base = preg_replace('#^file:\/\/([^/])#', 'file:///\1', $base);
 
@@ -67,17 +60,11 @@ class UrlUtils
         );
     }
 
-    /**
-    * @param string $rel
-    * @param string $path
-    *
-    * @return string
-    */
     protected static function resolveRelativeUrlToAbsoluteUrl(
-        $rel,
-        $path,
+        string $rel,
+        string $path,
         array $parts
-    ) {
+    ) : string {
         /* Build absolute URL */
         $abs = '';
 

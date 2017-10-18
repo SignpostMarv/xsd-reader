@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 namespace GoetasWebservices\XML\XSDReader\Schema;
 
 use GoetasWebservices\XML\XSDReader\Schema\Attribute\AttributeItemTrait;
@@ -17,20 +18,13 @@ abstract class Item implements SchemaItem
     */
     protected $type;
 
-    /**
-    * @param string $name
-    */
-    public function __construct(Schema $schema, $name)
+    public function __construct(Schema $schema, string $name)
     {
         $this->schema = $schema;
         $this->name = $name;
     }
 
-    /**
-     *
-     * @return Type|null
-     */
-    public function getType()
+    public function getType() : ? Type
     {
         return $this->type;
     }
@@ -38,7 +32,7 @@ abstract class Item implements SchemaItem
     /**
     * @return $this
     */
-    public function setType(Type $type)
+    public function setType(Type $type) : self
     {
         $this->type = $type;
         return $this;

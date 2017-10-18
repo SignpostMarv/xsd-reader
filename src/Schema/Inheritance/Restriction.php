@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 namespace GoetasWebservices\XML\XSDReader\Schema\Inheritance;
 
 use DOMElement;
@@ -18,7 +19,7 @@ class Restriction extends Base
     *
     * @return $this
     */
-    public function addCheck($type, $value)
+    public function addCheck(string $type, array $value)
     {
         $this->checks[$type][] = $value;
         return $this;
@@ -27,7 +28,7 @@ class Restriction extends Base
     /**
     * @return mixed[][]
     */
-    public function getChecks()
+    public function getChecks() : array
     {
         return $this->checks;
     }
@@ -37,7 +38,7 @@ class Restriction extends Base
     *
     * @return mixed[]
     */
-    public function getChecksByType($type)
+    public function getChecksByType(string $type) : array
     {
         return isset($this->checks[$type])?$this->checks[$type]:array();
     }
@@ -46,13 +47,15 @@ class Restriction extends Base
         SchemaReader $reader,
         Type $type,
         DOMElement $node
-    ) {
+    ) : void {
         $restriction = new Restriction();
         $type->setRestriction($restriction);
         if ($node->hasAttribute("base")) {
             $reader->findAndSetSomeBase($type, $restriction, $node);
         } else {
-            $addCallback = function (Type $restType) use ($restriction) {
+            $addCallback = function (Type $restType) use (
+                $restriction
+            ) : void {
                 $restriction->setBase($restType);
             };
 

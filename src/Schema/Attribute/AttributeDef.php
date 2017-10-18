@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 namespace GoetasWebservices\XML\XSDReader\Schema\Attribute;
 
 use GoetasWebservices\XML\XSDReader\Schema\Item;
@@ -18,7 +19,7 @@ class AttributeDef extends Item implements AttributeItem
     /**
     * @return static|null
     */
-    public function getFixed()
+    public function getFixed() : ? self
     {
         return $this->fixed;
     }
@@ -28,7 +29,7 @@ class AttributeDef extends Item implements AttributeItem
     *
     * @return $this
     */
-    public function setFixed($fixed)
+    public function setFixed(AttributeDef $fixed) : self
     {
         $this->fixed = $fixed;
         return $this;
@@ -37,7 +38,7 @@ class AttributeDef extends Item implements AttributeItem
     /**
     * @return static|null
     */
-    public function getDefault()
+    public function getDefault() : ? self
     {
         return $this->default;
     }
@@ -47,7 +48,7 @@ class AttributeDef extends Item implements AttributeItem
     *
     * @return $this
     */
-    public function setDefault($default)
+    public function setDefault(AttributeDef $default) : self
     {
         $this->default = $default;
         return $this;

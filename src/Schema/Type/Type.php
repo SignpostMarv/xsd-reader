@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 namespace GoetasWebservices\XML\XSDReader\Schema\Type;
 
 use Closure;
@@ -89,7 +90,7 @@ abstract class Type implements SchemaItem
     /**
     * @return Restriction|null
     */
-    public function getRestriction()
+    public function getRestriction() : ? Restriction
     {
         return $this->restriction;
     }
@@ -97,16 +98,13 @@ abstract class Type implements SchemaItem
     /**
     * @return $this
     */
-    public function setRestriction(Restriction $restriction)
+    public function setRestriction(Restriction $restriction) : self
     {
         $this->restriction = $restriction;
         return $this;
     }
 
-    /**
-    * @return Extension|null
-    */
-    public function getExtension()
+    public function getExtension() : ? Extension
     {
         return $this->extension;
     }
@@ -114,7 +112,7 @@ abstract class Type implements SchemaItem
     /**
     * @return $this
     */
-    public function setExtension(Extension $extension)
+    public function setExtension(Extension $extension) : self
     {
         $this->extension = $extension;
         return $this;
@@ -125,7 +123,7 @@ abstract class Type implements SchemaItem
         Schema $schema,
         DOMNode $node,
         Closure $callback
-    ) {
+    ) : void {
         foreach ($node->childNodes as $childNode) {
             static::loadTypeWithCallback(
                 $schemaReader,
@@ -141,7 +139,7 @@ abstract class Type implements SchemaItem
         Schema $schema,
         DOMNode $childNode,
         Closure $callback
-    ) {
+    ) : void {
         if (! ($childNode instanceof DOMElement)) {
             return;
         }

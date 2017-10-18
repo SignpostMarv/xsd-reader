@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 namespace GoetasWebservices\XML\XSDReader\Schema\Attribute;
 
 trait AttributeContainerTrait
@@ -8,7 +9,7 @@ trait AttributeContainerTrait
     */
     protected $attributes = array();
 
-    public function addAttribute(AttributeItem $attribute)
+    public function addAttribute(AttributeItem $attribute) : void
     {
         $this->attributes[] = $attribute;
     }
@@ -16,7 +17,7 @@ trait AttributeContainerTrait
     /**
     * @return AttributeItem[]
     */
-    public function getAttributes()
+    public function getAttributes() : array
     {
         return $this->attributes;
     }

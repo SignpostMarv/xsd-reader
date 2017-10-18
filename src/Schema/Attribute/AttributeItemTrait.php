@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 namespace GoetasWebservices\XML\XSDReader\Schema\Attribute;
 
 trait AttributeItemTrait
@@ -8,10 +9,7 @@ trait AttributeItemTrait
     */
     protected $name;
 
-    /**
-    * @return string
-    */
-    public function getName()
+    public function getName() : string
     {
         return $this->name;
     }
@@ -21,7 +19,7 @@ trait AttributeItemTrait
     *
     * @return $this
     */
-    public function setName($name)
+    public function setName(string $name)
     {
         $this->name = $name;
         return $this;

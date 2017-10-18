@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 namespace GoetasWebservices\XML\XSDReader\Schema\Attribute;
 
 use DOMElement;
@@ -36,7 +37,7 @@ class Attribute extends Item implements AttributeSingle
     /**
     * @return static|null
     */
-    public function getFixed()
+    public function getFixed() : ? self
     {
         return $this->fixed;
     }
@@ -46,7 +47,7 @@ class Attribute extends Item implements AttributeSingle
     *
     * @return $this
     */
-    public function setFixed($fixed)
+    public function setFixed(Attribute $fixed) : self
     {
         $this->fixed = $fixed;
         return $this;
@@ -55,7 +56,7 @@ class Attribute extends Item implements AttributeSingle
     /**
     * @return static|null
     */
-    public function getDefault()
+    public function getDefault() : ? self
     {
         return $this->default;
     }
@@ -65,77 +66,59 @@ class Attribute extends Item implements AttributeSingle
     *
     * @return $this
     */
-    public function setDefault($default)
+    public function setDefault(Attribute $default) : self
     {
         $this->default = $default;
         return $this;
     }
 
-    /**
-    * @return bool
-    */
-    public function isQualified()
+    public function isQualified() : bool
     {
         return $this->qualified;
     }
 
     /**
-    * @param bool $qualified
-    *
-    * @return $this
+    * {@inheritdoc}
     */
-    public function setQualified($qualified)
+    public function setQualified(bool $qualified) : AttributeSingle
     {
         $this->qualified = $qualified;
         return $this;
     }
 
-    /**
-    * @return bool
-    */
-    public function isNil()
+    public function isNil() : bool
     {
         return $this->nil;
     }
 
     /**
-    * @param bool $nil
-    *
-    * @return $this
+    * {@inheritdoc}
     */
-    public function setNil($nil)
+    public function setNil(bool $nil) : AttributeSingle
     {
         $this->nil = $nil;
         return $this;
     }
 
-    /**
-    * @return string
-    */
-    public function getUse()
+    public function getUse() : string
     {
         return $this->use;
     }
 
     /**
-    * @param string $use
-    *
-    * @return $this
+    * {@inheritdoc}
     */
-    public function setUse($use)
+    public function setUse(string $use) : AttributeSingle
     {
         $this->use = $use;
         return $this;
     }
 
-    /**
-    * @return Attribute
-    */
     public static function loadAttribute(
         SchemaReader $schemaReader,
         Schema $schema,
         DOMElement $node
-    ) {
+    ) : Attribute {
         $attribute = new Attribute($schema, $node->getAttribute("name"));
         $attribute->setDoc(SchemaReader::getDocumentation($node));
         $schemaReader->fillItem($attribute, $node);
@@ -152,15 +135,12 @@ class Attribute extends Item implements AttributeSingle
         return $attribute;
     }
 
-    /**
-    * @return AttributeItem
-    */
     public static function getAttributeFromAttributeOrRef(
         SchemaReader $schemaReader,
         DOMElement $childNode,
         Schema $schema,
         DOMElement $node
-    ) {
+    ) : AttributeItem {
         if ($childNode->hasAttribute("ref")) {
             /**
             * @var AttributeItem $attribute

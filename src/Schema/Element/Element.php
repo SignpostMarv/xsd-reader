@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 namespace GoetasWebservices\XML\XSDReader\Schema\Element;
 
 use DOMElement;
@@ -29,90 +30,67 @@ class Element extends Item implements ElementItem, ElementSingle
     */
     protected $nil = false;
 
-    /**
-    * @return int
-    */
-    public function getMin()
+    public function getMin() : int
     {
         return $this->min;
     }
 
     /**
-    * @param int $min
-    *
-    * @return $this
+    * {@inheritdoc}
     */
-    public function setMin($min)
+    public function setMin(int $min) : self
     {
         $this->min = $min;
         return $this;
     }
 
-    /**
-    * @return int
-    */
-    public function getMax()
+    public function getMax() : int
     {
         return $this->max;
     }
 
     /**
-    * @param int $max
-    *
-    * @return $this
+    * {@inheritdoc}
     */
-    public function setMax($max)
+    public function setMax(int $max) : self
     {
         $this->max = $max;
         return $this;
     }
 
-    /**
-    * @return bool
-    */
-    public function isQualified()
+    public function isQualified() : bool
     {
         return $this->qualified;
     }
 
     /**
-    * @param bool $qualified
-    *
-    * @return $this
+    * {@inheritdoc}
     */
-    public function setQualified($qualified)
+    public function setQualified(bool $qualified) : ElementSingle
     {
-        $this->qualified = is_bool($qualified) ? $qualified : (boolean) $qualified;
+        $this->qualified = $qualified;
         return $this;
     }
 
-    /**
-    * @return bool
-    */
-    public function isNil()
+    public function isNil() : bool
     {
         return $this->nil;
     }
 
     /**
-    * @param bool $nil
-    *
-    * @return $this
+    * {@inheritdoc}
     */
-    public function setNil($nil)
+    public function setNil(bool $nil) : ElementSingle
     {
-        $this->nil = is_bool($nil) ? $nil : (boolean) $nil;
+        $this->nil = $nil;
         return $this;
     }
 
-    /**
-    * @return Element
-    */
     public static function loadElement(
         SchemaReader $reader,
         Schema $schema,
         DOMElement $node
-    ) {
+    ) : Element {
         $element = new Element($schema, $node->getAttribute("name"));
         $element->setDoc(SchemaReader::getDocumentation($node));
 

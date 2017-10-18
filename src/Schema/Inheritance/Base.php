@@ -1,4 +1,5 @@
 <?php
+declare(strict_types = 1);
 namespace GoetasWebservices\XML\XSDReader\Schema\Inheritance;
 
 use GoetasWebservices\XML\XSDReader\Schema\Type\Type;
@@ -12,10 +13,7 @@ abstract class Base
      */
     protected $base;
 
-    /**
-    * @return Type|null
-    */
-    public function getBase()
+    public function getBase() : ? Type
     {
         return $this->base;
     }
@@ -23,7 +21,7 @@ abstract class Base
     /**
     * @return $this
     */
-    public function setBase(Type $base)
+    public function setBase(Type $base) : self
     {
         $this->base = $base;
         return $this;

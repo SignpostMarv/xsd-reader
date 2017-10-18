@@ -1,6 +1,8 @@
 <?php
+declare(strict_types = 1);
 namespace GoetasWebservices\XML\XSDReader\Schema\Element;
 
+use Closure;
 use DOMElement;
 use GoetasWebservices\XML\XSDReader\Schema\Attribute\AttributeItemTrait;
 use GoetasWebservices\XML\XSDReader\Schema\Schema;
@@ -18,54 +20,40 @@ class Group implements ElementItem, ElementContainer
     protected $schema;
 
     /**
-    * @var string|null
+    * @var string
     */
-    protected $doc;
+    protected $doc = '';
 
-    /**
-    * @param string $name
-    */
-    public function __construct(Schema $schema, $name)
+    public function __construct(Schema $schema, string $name)
     {
         $this->schema = $schema;
         $this->name = $name;
     }
 
-    /**
-    * @return string|null
-    */
-    public function getDoc()
+    public function getDoc() : string
     {
         return $this->doc;
     }
 
     /**
-    * @param string $doc
-    *
     * @return $this
     */
-    public function setDoc($doc)
+    public function setDoc(string $doc) : self
     {
         $this->doc = $doc;
         return $this;
     }
 
-    /**
-    * @return Schema
-    */
-    public function getSchema()
+    public function getSchema() : Schema
     {
         return $this->schema;
     }
 
-    /**
-    * @return \Closure
-    */
     public static function loadGroup(
         SchemaReader $reader,
         Schema $schema,
         DOMElement $node
-    ) {
+    ) : Closure {
         $group = new Group($schema, $node->getAttribute("name"));
         $group->setDoc(SchemaReader::getDocumentation($node));
 
@@ -93,7 +81,7 @@ class Group implements ElementItem, ElementContainer
             'all' => 'loadSequence',
         ];
 
-        return function () use ($reader, $group, $node, $methods) {
+        return function () use ($reader, $group, $node, $methods) : void {
             foreach ($node->childNodes as $childNode) {
                 $reader->maybeCallMethod(
                     $methods,
