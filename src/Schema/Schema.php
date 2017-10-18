@@ -379,7 +379,7 @@ class Schema
         string $namespace = null
     ) : AttributeGroup {
         /**
-        * @var AttributeGroup
+        * @var AttributeGroup $out
         */
         $out = $this->findSomething('getAttributeGroup', $name, $namespace);
 
