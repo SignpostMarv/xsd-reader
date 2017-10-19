@@ -6,6 +6,7 @@ use Closure;
 use DOMDocument;
 use DOMElement;
 use DOMNode;
+use DOMNodeList;
 use GoetasWebservices\XML\XSDReader\Exception\IOException;
 use GoetasWebservices\XML\XSDReader\Exception\TypeException;
 use GoetasWebservices\XML\XSDReader\Schema\Attribute\Attribute;
@@ -271,35 +272,65 @@ class SchemaReader
         DOMElement $childNode,
         ? int $max
     ) : void {
-        $loadSeq = $this->makeLoadSequenceChildNodeLoadSequence(
-            $elementContainer,
-            $childNode,
-            $max
-        );
+        $commonMethods = [
+            [
+                ['sequence', 'choice', 'all'],
+                [$this, 'loadSequenceChildNodeLoadSequence'],
+                [
+                    $elementContainer,
+                    $childNode,
+                    $max,
+                ],
+            ],
+        ];
         $methods = [
-            'choice' => $loadSeq,
-            'sequence' => $loadSeq,
-            'all' => $loadSeq,
-            'element' => $this->makeLoadSequenceChildNodeLoadElement(
-                $elementContainer,
-                $node,
-                $childNode,
-                $max
-            ),
-            'group' => $this->makeLoadSequenceChildNodeLoadGroup(
-                $elementContainer,
-                $node,
-                $childNode
-            ),
+            'element' => [
+                [$this, 'loadSequenceChildNodeLoadElement'],
+                [
+                    $elementContainer,
+                    $node,
+                    $childNode,
+                    $max
+                ]
+            ],
+            'group' => [
+                [$this, 'loadSequenceChildNodeLoadGroup'],
+                [
+                    $elementContainer,
+                    $node,
+                    $childNode
+                ]
+            ],
         ];
 
+        $this->maybeCallCallableWithArgs($childNode, $commonMethods, $methods);
+    }
+
+    /**
+    * @param mixed[][] $methods
+    *
+    * @return mixed
+    */
+    private function maybeCallCallableWithArgs(
+        DOMElement $childNode,
+        array $commonMethods = [],
+        array $methods = []
+    ) {
+        foreach ($commonMethods as $commonMethodsSpec) {
+            list ($localNames, $callable, $args) = $commonMethodsSpec;
+
+            if (in_array($childNode->localName, $localNames)) {
+                return call_user_func_array($callable, $args);
+            }
+        }
         if (isset($methods[$childNode->localName])) {
-            $method = $methods[$childNode->localName];
-            $method();
+            list ($callable, $args) = $methods[$childNode->localName];
+
+            return call_user_func_array($callable, $args);
         }
     }
 
-    private function makeLoadSequenceChildNodeLoadSequence(
+    private function loadSequenceChildNodeLoadSequence(
         ElementContainer $elementContainer,
         DOMElement $childNode,
         ? int $max
@@ -309,58 +340,45 @@ class SchemaReader
         };
     }
 
-    private function makeLoadSequenceChildNodeLoadElement(
+    private function loadSequenceChildNodeLoadElement(
         ElementContainer $elementContainer,
         DOMElement $node,
         DOMElement $childNode,
         ? int $max
-    ) : Closure {
-        return function () use (
-            $elementContainer,
-            $node,
-            $childNode,
-            $max
-        ) : void {
-            if ($childNode->hasAttribute("ref")) {
-                /**
-                * @var ElementDef $referencedElement
-                */
-                $referencedElement = $this->findSomething('findElement', $elementContainer->getSchema(), $node, $childNode->getAttribute("ref"));
-                $element = ElementRef::loadElementRef(
-                    $referencedElement,
-                    $childNode
-                );
-            } else {
-                $element = Element::loadElement(
-                    $this,
-                    $elementContainer->getSchema(),
-                    $childNode
-                );
-            }
-            if (is_int($max) && (bool) $max) {
-                $element->setMax($max);
-            }
-            $elementContainer->addElement($element);
-        };
+    ) : void {
+        if ($childNode->hasAttribute("ref")) {
+            /**
+            * @var ElementDef $referencedElement
+            */
+            $referencedElement = $this->findSomething('findElement', $elementContainer->getSchema(), $node, $childNode->getAttribute("ref"));
+            $element = ElementRef::loadElementRef(
+                $referencedElement,
+                $childNode
+            );
+        } else {
+            $element = Element::loadElement(
+                $this,
+                $elementContainer->getSchema(),
+                $childNode
+            );
+        }
+        if (is_int($max) && (bool) $max) {
+            $element->setMax($max);
+        }
+        $elementContainer->addElement($element);
     }
 
-    private function makeLoadSequenceChildNodeLoadGroup(
+    private function loadSequenceChildNodeLoadGroup(
         ElementContainer $elementContainer,
         DOMElement $node,
         DOMElement $childNode
-    ) : Closure {
-        return function () use (
-            $elementContainer,
+    ) : void {
+        $this->addGroupAsElement(
+            $elementContainer->getSchema(),
             $node,
-            $childNode
-        ) : void {
-            $this->addGroupAsElement(
-                $elementContainer->getSchema(),
-                $node,
-                $childNode,
-                $elementContainer
-            );
-        };
+            $childNode,
+            $elementContainer
+        );
     }
 
     private function addGroupAsElement(
@@ -406,11 +424,11 @@ class SchemaReader
         return Group::loadGroup($this, $schema, $node);
     }
 
-    private function loadComplexType(
+
+    private function loadComplexTypeBeforeCallbackCallback(
         Schema $schema,
-        DOMElement $node,
-        Closure $callback = null
-    ) : Closure {
+        DOMElement $node
+    ) : BaseComplexType {
         $isSimple = false;
 
         foreach ($node->childNodes as $childNode) {
@@ -427,23 +445,35 @@ class SchemaReader
             $schema->addType($type);
         }
 
+        return $type;
+    }
+
+    /**
+    * @param Closure|null $callback
+    *
+    * @return Closure
+    */
+    private function loadComplexType(Schema $schema, DOMElement $node, $callback = null)
+    {
+        $type = $this->loadComplexTypeBeforeCallbackCallback($schema, $node);
+
         return $this->makeCallbackCallback(
             $type,
             $node,
-                function (
-                    DOMElement $node,
-                    DOMElement $childNode
-                ) use(
-                    $schema,
-                    $type
-                ) : void {
-                    $this->loadComplexTypeFromChildNode(
-                        $type,
-                        $node,
-                        $childNode,
-                        $schema
-                    );
-                },
+            function (
+                DOMElement $node,
+                DOMElement $childNode
+            ) use(
+                $schema,
+                $type
+            ) : void {
+                $this->loadComplexTypeFromChildNode(
+                    $type,
+                    $node,
+                    $childNode,
+                    $schema
+                );
+            },
             $callback
         );
     }
@@ -503,68 +533,52 @@ class SchemaReader
         DOMElement $childNode,
         Schema $schema
     ) : void {
-        $maybeLoadSeq = function () use ($type, $childNode) : void {
-            $this->maybeLoadSequenceFromElementContainer(
-                $type,
-                $childNode
-            );
-        };
+        $commonMethods = [
+            [
+                ['sequence', 'choice', 'all'],
+                [$this, 'maybeLoadSequenceFromElementContainer'],
+                [
+                    $type,
+                    $childNode,
+                ],
+            ],
+        ];
         $methods = [
-            'sequence' => $maybeLoadSeq,
-            'choice' => $maybeLoadSeq,
-            'all' => $maybeLoadSeq,
-            'attribute' => function () use (
-                $childNode,
-                $schema,
-                $node,
-                $type
-            ) : void {
-                $attribute = Attribute::getAttributeFromAttributeOrRef(
+            'attribute' => [
+                [$type, 'addAttributeFromAttributeOrRef'],
+                [
                     $this,
                     $childNode,
                     $schema,
                     $node
-                );
-
-                $type->addAttribute($attribute);
-            },
-            'attributeGroup' => function() use (
-                $schema,
-                $node,
-                $childNode,
-                $type
-            ) : void {
-                AttributeGroup::findSomethingLikeThis(
+                ]
+            ],
+            'attributeGroup' => [
+                (AttributeGroup::class . '::findSomethingLikeThis'),
+                [
                     $this,
                     $schema,
                     $node,
                     $childNode,
                     $type
-                );
-            },
+                ]
+            ],
         ];
         if (
             $type instanceof ComplexType
         ) {
-            $methods['group'] = function() use (
-                $schema,
-                $node,
-                $childNode,
-                $type
-            ) : void {
-                $this->addGroupAsElement(
+            $methods['group'] = [
+                [$this, 'addGroupAsElement'],
+                [
                     $schema,
                     $node,
                     $childNode,
                     $type
-                );
-            };
+                ]
+            ];
         }
 
-        if (isset($methods[$childNode->localName])) {
-            $method = $methods[$childNode->localName];
-            $method();
-        }
+        $this->maybeCallCallableWithArgs($childNode, $commonMethods, $methods);
     }
 
     private function loadSimpleType(
@@ -718,10 +732,47 @@ class SchemaReader
         }
     }
 
-    private function loadExtension(
+    private function loadExtensionChildNode(
         BaseComplexType $type,
-        DOMElement $node
+        DOMElement $node,
+        DOMElement $childNode
     ) : void {
+        $commonMethods = [
+            [
+                ['sequence', 'choice', 'all'],
+                [$this, 'maybeLoadSequenceFromElementContainer'],
+                [
+                    $type,
+                    $childNode,
+                ],
+            ],
+        ];
+        $methods = [
+            'attribute' => [
+                [$type, 'addAttributeFromAttributeOrRef'],
+                [
+                    $this,
+                    $childNode,
+                    $type->getSchema(),
+                    $node
+                ]
+            ],
+            'attributeGroup' => [
+                (AttributeGroup::class . '::findSomethingLikeThis'),
+                [
+                    $this,
+                    $type->getSchema(),
+                    $node,
+                    $childNode,
+                    $type
+                ]
+            ],
+        ];
+
+        $this->maybeCallCallableWithArgs($childNode, $commonMethods, $methods);
+    }
+
+    private function loadExtension(BaseComplexType $type, DOMElement $node) : void {
         $extension = new Extension();
         $type->setExtension($extension);
 
@@ -733,51 +784,21 @@ class SchemaReader
             );
         }
 
-        $seqFromElement = function (DOMElement $childNode) use ($type) : void {
-            $this->maybeLoadSequenceFromElementContainer(
-                $type,
-                $childNode
-            );
-        };
+        $this->loadExtensionChildNodes($type, $node->childNodes, $node);
+    }
 
-        $methods = [
-            'sequence' => $seqFromElement,
-            'choice' => $seqFromElement,
-            'all' => $seqFromElement,
-            'attribute' => function (
-                DOMElement $childNode
-            ) use (
-                $node,
-                $type
-            ) : void {
-                $attribute = Attribute::getAttributeFromAttributeOrRef(
-                    $this,
-                    $childNode,
-                    $type->getSchema(),
-                    $node
-                );
-                $type->addAttribute($attribute);
-            },
-            'attributeGroup' => function (
-                DOMElement $childNode
-            ) use (
-                $node,
-                $type
-            ) : void {
-                AttributeGroup::findSomethingLikeThis(
-                    $this,
-                    $type->getSchema(),
+    private function loadExtensionChildNodes(
+        BaseComplexType $type,
+        DOMNodeList $childNodes,
+        DOMElement $node
+    ) : void {
+        foreach ($childNodes as $childNode) {
+            if ($childNode instanceof DOMElement) {
+                $this->loadExtensionChildNode(
+                    $type,
                     $node,
-                    $childNode,
-                    $type
+                    $childNode
                 );
-            },
-        ];
-
-        foreach ($node->childNodes as $childNode) {
-            if (isset($methods[$childNode->localName])) {
-                $method = $methods[$childNode->localName];
-                $method($childNode);
             }
         }
     }
@@ -984,10 +1005,11 @@ class SchemaReader
     */
     private $globalSchema;
 
-    public function getGlobalSchema() : Schema
+    /**
+    * @return Schema[]
+    */
+    private function setupGlobalSchemas(array & $callbacks) : array
     {
-        if (!$this->globalSchema) {
-            $callbacks = array();
             $globalSchemas = array();
             foreach (self::$globalSchemaInfo as $namespace => $uri) {
                 Schema::setLoadedFile(
@@ -1000,6 +1022,19 @@ class SchemaReader
                 $xml = $this->getDOM($this->knownLocationSchemas[$uri]);
                 $callbacks = array_merge($callbacks, $this->schemaNode($schema, $xml->documentElement));
             }
+
+        return $globalSchemas;
+    }
+
+    /**
+     *
+     * @return Schema
+     */
+    public function getGlobalSchema()
+    {
+        if (!$this->globalSchema) {
+            $callbacks = array();
+            $globalSchemas = $this->setupGlobalSchemas($callbacks);
 
             $globalSchemas[self::XSD_NS]->addType(new SimpleType($globalSchemas[self::XSD_NS], "anySimpleType"));
             $globalSchemas[self::XSD_NS]->addType(new SimpleType($globalSchemas[self::XSD_NS], "anyType"));

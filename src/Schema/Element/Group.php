@@ -49,11 +49,10 @@ class Group implements ElementItem, ElementContainer
         return $this->schema;
     }
 
-    public static function loadGroup(
-        SchemaReader $reader,
+    protected static function loadGroupBeforeCheckingChildNodes(
         Schema $schema,
         DOMElement $node
-    ) : Closure {
+    ) : Group {
         $group = new Group($schema, $node->getAttribute("name"));
         $group->setDoc(SchemaReader::getDocumentation($node));
 
@@ -74,6 +73,19 @@ class Group implements ElementItem, ElementContainer
         }
 
         $schema->addGroup($group);
+
+        return $group;
+    }
+
+    public static function loadGroup(
+        SchemaReader $reader,
+        Schema $schema,
+        DOMElement $node
+    ) : Closure {
+        $group = static::loadGroupBeforeCheckingChildNodes(
+            $schema,
+            $node
+        );
 
         static $methods = [
             'sequence' => 'loadSequence',

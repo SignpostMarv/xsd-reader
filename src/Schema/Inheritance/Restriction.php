@@ -67,34 +67,56 @@ class Restriction extends Base
             );
         }
         foreach ($node->childNodes as $childNode) {
-            if (
-                in_array(
-                    $childNode->localName,
-                    [
-                        'enumeration',
-                        'pattern',
-                        'length',
-                        'minLength',
-                        'maxLength',
-                        'minInclusive',
-                        'maxInclusive',
-                        'minExclusive',
-                        'maxExclusive',
-                        'fractionDigits',
-                        'totalDigits',
-                        'whiteSpace'
-                    ],
-                    true
-                )
-            ) {
-                $restriction->addCheck(
-                    $childNode->localName,
-                    [
-                        'value' => $childNode->getAttribute("value"),
-                        'doc' => SchemaReader::getDocumentation($childNode)
-                    ]
+            if ($childNode instanceof DOMElement) {
+                static::maybeLoadRestrictionOnChildNode(
+                    $restriction,
+                    $childNode
                 );
             }
         }
+    }
+
+    protected static function maybeLoadRestrictionOnChildNode(
+        Restriction $restriction,
+        DOMElement $childNode
+    ) : void {
+        if (
+            in_array(
+                $childNode->localName,
+                [
+                    'enumeration',
+                    'pattern',
+                    'length',
+                    'minLength',
+                    'maxLength',
+                    'minInclusive',
+                    'maxInclusive',
+                    'minExclusive',
+                    'maxExclusive',
+                    'fractionDigits',
+                    'totalDigits',
+                    'whiteSpace'
+                ],
+                true
+            )
+        ) {
+            static::definitelyLoadRestrictionOnChildNode(
+                $restriction,
+                $childNode
+            );
+        }
+    }
+
+    protected static function definitelyLoadRestrictionOnChildNode(
+        Restriction $restriction,
+        DOMElement $childNode
+    ) : void {
+        $restriction->addCheck(
+            $childNode->localName,
+            [
+                'value' => $childNode->getAttribute("value"),
+                'doc' => SchemaReader::getDocumentation($childNode)
+            ]
+        );
     }
 }
