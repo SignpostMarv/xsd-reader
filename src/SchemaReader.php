@@ -772,7 +772,10 @@ class SchemaReader
         $this->maybeCallCallableWithArgs($childNode, $commonMethods, $methods);
     }
 
-    private function loadExtension(BaseComplexType $type, DOMElement $node) : void {
+    private function loadExtension(
+        BaseComplexType $type,
+        DOMElement $node
+    ) : void {
         $extension = new Extension();
         $type->setExtension($extension);
 
