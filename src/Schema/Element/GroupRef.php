@@ -62,11 +62,6 @@ class GroupRef extends Group implements InterfaceSetMinMax
         return $this->wrapped->getName();
     }
 
-    public function setName(string $name) : void
-    {
-        throw new BadMethodCallException("Can't set the name for a ref group");
-    }
-
     /**
     * @return ElementItem[]
     */
