@@ -271,18 +271,51 @@ class SchemaReader
         DOMElement $childNode,
         ? int $max
     ) : void {
-        $loadSeq = function () use (
+        $loadSeq = $this->makeLoadSequenceChildNodeLoadSequence(
             $elementContainer,
             $childNode,
             $max
-        ) : void {
-            $this->loadSequence($elementContainer, $childNode, $max);
-        };
+        );
         $methods = [
             'choice' => $loadSeq,
             'sequence' => $loadSeq,
             'all' => $loadSeq,
-            'element' => function () use (
+            'element' => $this->makeLoadSequenceChildNodeLoadElement(
+                $elementContainer,
+                $node,
+                $childNode,
+                $max
+            ),
+            'group' => $this->makeLoadSequenceChildNodeLoadGroup(
+                $elementContainer,
+                $node,
+                $childNode
+            ),
+        ];
+
+        if (isset($methods[$childNode->localName])) {
+            $method = $methods[$childNode->localName];
+            $method();
+        }
+    }
+
+    private function makeLoadSequenceChildNodeLoadSequence(
+        ElementContainer $elementContainer,
+        DOMElement $childNode,
+        ? int $max
+    ) : Closure {
+        return function () use ($elementContainer, $childNode, $max) : void {
+            $this->loadSequence($elementContainer, $childNode, $max);
+        };
+    }
+
+    private function makeLoadSequenceChildNodeLoadElement(
+        ElementContainer $elementContainer,
+        DOMElement $node,
+        DOMElement $childNode,
+        ? int $max
+    ) : Closure {
+        return function () use (
                 $elementContainer,
                 $node,
                 $childNode,
@@ -308,8 +341,15 @@ class SchemaReader
                     $element->setMax($max);
                 }
                 $elementContainer->addElement($element);
-            },
-            'group' => function () use (
+        };
+    }
+
+    private function makeLoadSequenceChildNodeLoadGroup(
+        ElementContainer $elementContainer,
+        DOMElement $node,
+        DOMElement $childNode
+    ) : Closure {
+        return function () use (
                 $elementContainer,
                 $node,
                 $childNode
@@ -320,13 +360,7 @@ class SchemaReader
                     $childNode,
                     $elementContainer
                 );
-            },
-        ];
-
-        if (isset($methods[$childNode->localName])) {
-            $method = $methods[$childNode->localName];
-            $method();
-        }
+        };
     }
 
     private function addGroupAsElement(
