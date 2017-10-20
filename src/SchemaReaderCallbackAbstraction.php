@@ -93,7 +93,7 @@ abstract class SchemaReaderCallbackAbstraction extends AbstractSchemaReader
         DOMElement $childNode,
         $instanceof,
         $passTo
-    ) {
+    ) : void {
         if (! is_a($type, $instanceof, true)) {
             throw new RuntimeException(
                 'Argument 1 passed to ' .
