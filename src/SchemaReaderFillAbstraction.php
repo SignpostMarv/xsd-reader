@@ -1,5 +1,4 @@
 <?php
-declare(strict_types = 1);
 namespace GoetasWebservices\XML\XSDReader;
 
 use Closure;
@@ -36,26 +35,56 @@ use GoetasWebservices\XML\XSDReader\Schema\Type\Type;
 use GoetasWebservices\XML\XSDReader\Utils\UrlUtils;
 use RuntimeException;
 
-class SchemaReader extends SchemaReaderLoadAbstraction
+abstract class SchemaReaderFillAbstraction extends SchemaReaderFindAbstraction
 {
-    /**
-    * @return mixed[]
-    */
-    protected static function splitParts(
+    protected function fillTypeNode(
+        Type $type,
         DOMElement $node,
-        string $typeName
-    ) : array {
-        $prefix = null;
-        $name = $typeName;
-        if (strpos($typeName, ':') !== false) {
-            list ($prefix, $name) = explode(':', $typeName);
+        bool $checkAbstract = false
+    ) : void {
+
+        if ($checkAbstract) {
+            $type->setAbstract($node->getAttribute("abstract") === "true" || $node->getAttribute("abstract") === "1");
         }
 
-        $namespace = $node->lookupNamespaceUri($prefix ?: '');
-        return array(
-            $name,
-            $namespace,
-            $prefix
-        );
+        static $methods = [
+            'restriction' => 'loadRestriction',
+            'extension' => 'maybeLoadExtensionFromBaseComplexType',
+            'simpleContent' => 'fillTypeNode',
+            'complexContent' => 'fillTypeNode',
+        ];
+
+        foreach ($node->childNodes as $childNode) {
+            $this->maybeCallMethod(
+                $methods,
+                (string) $childNode->localName,
+                $childNode,
+                $type,
+                $childNode
+            );
+        }
+    }
+
+    protected function fillItemNonLocalType(
+        Item $element,
+        DOMElement $node
+    ) : void {
+        if ($node->getAttribute("type")) {
+            /**
+            * @var Type $type
+            */
+            $type = $this->findSomeType($element, $node, 'type');
+        } else {
+            /**
+            * @var Type $type
+            */
+            $type = $this->findSomeTypeFromAttribute(
+                $element,
+                $node,
+                ($node->lookupPrefix(self::XSD_NS) . ':anyType')
+            );
+        }
+
+        $element->setType($type);
     }
 }

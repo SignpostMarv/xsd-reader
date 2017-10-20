@@ -1,5 +1,4 @@
 <?php
-declare(strict_types = 1);
 namespace GoetasWebservices\XML\XSDReader;
 
 use Closure;
@@ -36,26 +35,35 @@ use GoetasWebservices\XML\XSDReader\Schema\Type\Type;
 use GoetasWebservices\XML\XSDReader\Utils\UrlUtils;
 use RuntimeException;
 
-class SchemaReader extends SchemaReaderLoadAbstraction
+abstract class SchemaReaderFindAbstraction extends SchemaReaderCallbackAbstraction
 {
-    /**
-    * @return mixed[]
-    */
-    protected static function splitParts(
+    protected function findSomeType(
+        SchemaItem $fromThis,
         DOMElement $node,
-        string $typeName
-    ) : array {
-        $prefix = null;
-        $name = $typeName;
-        if (strpos($typeName, ':') !== false) {
-            list ($prefix, $name) = explode(':', $typeName);
-        }
-
-        $namespace = $node->lookupNamespaceUri($prefix ?: '');
-        return array(
-            $name,
-            $namespace,
-            $prefix
+        string $attributeName
+    ) : SchemaItem {
+        return $this->findSomeTypeFromAttribute(
+            $fromThis,
+            $node,
+            $node->getAttribute($attributeName)
         );
+    }
+
+    protected function findSomeTypeFromAttribute(
+        SchemaItem $fromThis,
+        DOMElement $node,
+        string $attributeName
+    ) : SchemaItem {
+        /**
+        * @var SchemaItem $out
+        */
+        $out = $this->findSomething(
+            'findType',
+            $fromThis->getSchema(),
+            $node,
+            $attributeName
+        );
+
+        return $out;
     }
 }
