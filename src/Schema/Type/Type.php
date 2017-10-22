@@ -122,33 +122,43 @@ abstract class Type implements SchemaItem
     public static function loadTypeWithCallbackOnChildNodes(
         AbstractSchemaReader $schemaReader,
         Schema $schema,
-        DOMNode $node,
+        DOMElement $node,
         Closure $callback
     ) : void {
-        foreach ($node->childNodes as $childNode) {
-            static::loadTypeWithCallback(
+        AbstractSchemaReader::againstDOMNodeList(
+            $node,
+            function (
+                DOMElement $node,
+                DOMElement $childNode
+            ) use (
                 $schemaReader,
                 $schema,
-                $childNode,
                 $callback
-            );
-        }
+            ) : void {
+                static::loadTypeWithCallback(
+                    $schemaReader,
+                    $schema,
+                    $childNode,
+                    $callback
+                );
+            }
+        );
     }
 
     public static function loadTypeWithCallback(
         AbstractSchemaReader $schemaReader,
         Schema $schema,
-        DOMNode $childNode,
+        DOMElement $childNode,
         Closure $callback
     ) : void {
-        if (! ($childNode instanceof DOMElement)) {
-            return;
-        }
         $methods = [
             'complexType' => 'loadComplexType',
             'simpleType' => 'loadSimpleType',
         ];
 
+        /**
+        * @var Closure|null $func
+        */
         $func = $schemaReader->maybeCallMethod(
             $methods,
             $childNode->localName,

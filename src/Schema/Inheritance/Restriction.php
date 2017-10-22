@@ -67,14 +67,20 @@ class Restriction extends Base
                 $addCallback
             );
         }
-        foreach ($node->childNodes as $childNode) {
-            if ($childNode instanceof DOMElement) {
+        SchemaReaderLoadAbstraction::againstDOMNodeList(
+            $node,
+            function (
+                DOMElement $node,
+                DOMElement $childNode
+            ) use (
+                $restriction
+            ) : void {
                 static::maybeLoadRestrictionOnChildNode(
                     $restriction,
                     $childNode
                 );
             }
-        }
+        );
     }
 
     protected static function maybeLoadRestrictionOnChildNode(

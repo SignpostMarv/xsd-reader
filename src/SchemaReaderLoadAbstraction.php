@@ -92,8 +92,15 @@ abstract class SchemaReaderLoadAbstraction extends SchemaReaderFillAbstraction
     ) : void {
         $max = static::loadSequenceNormaliseMax($node, $max);
 
-        foreach ($node->childNodes as $childNode) {
-            if ($childNode instanceof DOMElement) {
+        static::againstDOMNodeList(
+            $node,
+            function (
+                DOMElement $node,
+                DOMElement $childNode
+            ) use (
+                $elementContainer,
+                $max
+            ) : void {
                 $this->loadSequenceChildNode(
                     $elementContainer,
                     $node,
@@ -101,7 +108,7 @@ abstract class SchemaReaderLoadAbstraction extends SchemaReaderFillAbstraction
                     $max
                 );
             }
-        }
+        );
     }
 
     protected function loadSequenceChildNode(
@@ -222,14 +229,27 @@ abstract class SchemaReaderLoadAbstraction extends SchemaReaderFillAbstraction
         Schema $schema,
         DOMElement $node
     ) : BaseComplexType {
+        /**
+        * @var bool $isSimple
+        */
         $isSimple = false;
 
-        foreach ($node->childNodes as $childNode) {
-            if ($childNode->localName === "simpleContent") {
-                $isSimple = true;
-                break;
+        static::againstDOMNodeList(
+            $node,
+            function (
+                DOMElement $node,
+                DOMElement $childNode
+            ) use (
+                & $isSimple
+            ) : void {
+                if ($isSimple) {
+                    return;
+                }
+                if ($childNode->localName === "simpleContent") {
+                    $isSimple = true;
+                }
             }
-        }
+        );
 
         $type = $isSimple ? new ComplexTypeSimpleContent($schema, $node->getAttribute("name")) : new ComplexType($schema, $node->getAttribute("name"));
 
@@ -334,29 +354,16 @@ abstract class SchemaReaderLoadAbstraction extends SchemaReaderFillAbstraction
             $schema->addType($type);
         }
 
-        static $methods = [
-            'union' => 'loadUnion',
-            'list' => 'loadList',
-        ];
-
         return $this->makeCallbackCallback(
             $type,
             $node,
-            function (
-                DOMElement $node,
-                DOMElement $childNode
-            ) use (
-                $methods,
-                $type
-            ) : void {
-                $this->maybeCallMethod(
-                    $methods,
-                    $childNode->localName,
-                    $childNode,
-                    $type,
-                    $childNode
-                );
-            },
+            $this->CallbackGeneratorMaybeCallMethodAgainstDOMNodeList(
+                $type,
+                [
+                    'union' => 'loadUnion',
+                    'list' => 'loadList',
+                ]
+            ),
             $callback
         );
     }
@@ -411,44 +418,57 @@ abstract class SchemaReaderLoadAbstraction extends SchemaReaderFillAbstraction
         );
     }
 
-    protected function loadExtensionChildNode(
+    protected function loadExtensionChildNodes(
         BaseComplexType $type,
-        DOMElement $node,
-        DOMElement $childNode
+        DOMElement $node
     ) : void {
-        $commonMethods = [
-            [
-                ['sequence', 'choice', 'all'],
-                [$this, 'maybeLoadSequenceFromElementContainer'],
-                [
-                    $type,
-                    $childNode,
-                ],
-            ],
-        ];
-        $methods = [
-            'attribute' => [
-                [$type, 'addAttributeFromAttributeOrRef'],
-                [
-                    $this,
-                    $childNode,
-                    $type->getSchema(),
-                    $node
-                ]
-            ],
-            'attributeGroup' => [
-                (AttributeGroup::class . '::findSomethingLikeThis'),
-                [
-                    $this,
-                    $type->getSchema(),
-                    $node,
-                    $childNode,
-                    $type
-                ]
-            ],
-        ];
+        static::againstDOMNodeList(
+            $node,
+            function (
+                DOMElement $node,
+                DOMElement $childNode
+            ) use (
+                $type
+            ) : void {
+                $commonMethods = [
+                    [
+                        ['sequence', 'choice', 'all'],
+                        [$this, 'maybeLoadSequenceFromElementContainer'],
+                        [
+                            $type,
+                            $childNode,
+                        ],
+                    ],
+                ];
+                $methods = [
+                    'attribute' => [
+                        [$type, 'addAttributeFromAttributeOrRef'],
+                        [
+                            $this,
+                            $childNode,
+                            $type->getSchema(),
+                            $node
+                        ]
+                    ],
+                    'attributeGroup' => [
+                        (AttributeGroup::class . '::findSomethingLikeThis'),
+                        [
+                            $this,
+                            $type->getSchema(),
+                            $node,
+                            $childNode,
+                            $type
+                        ]
+                    ],
+                ];
 
-        $this->maybeCallCallableWithArgs($childNode, $commonMethods, $methods);
+                $this->maybeCallCallableWithArgs(
+                    $childNode,
+                    $commonMethods,
+                    $methods
+                );
+            }
+        );
     }
 
     protected function loadExtension(
@@ -465,24 +485,7 @@ abstract class SchemaReaderLoadAbstraction extends SchemaReaderFillAbstraction
                 $node
             );
         }
-
-        $this->loadExtensionChildNodes($type, $node->childNodes, $node);
-    }
-
-    protected function loadExtensionChildNodes(
-        BaseComplexType $type,
-        DOMNodeList $childNodes,
-        DOMElement $node
-    ) : void {
-        foreach ($childNodes as $childNode) {
-            if ($childNode instanceof DOMElement) {
-                $this->loadExtensionChildNode(
-                    $type,
-                    $node,
-                    $childNode
-                );
-            }
-        }
+        $this->loadExtensionChildNodes($type, $node);
     }
 
     protected function loadRestriction(Type $type, DOMElement $node) : void

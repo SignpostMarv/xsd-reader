@@ -35,10 +35,16 @@ class Schema extends AbstractSchema
         if (isset($this->typeCache[$cid])) {
             return $this->typeCache[$cid];
         } elseif (
-            $this->getTargetNamespace() === $namespace &&
-            (($item = $this->$getter($name)) instanceof SchemaItem)
+            $this->getTargetNamespace() === $namespace
         ) {
+            /**
+            * @var SchemaItem|null $item
+            */
+            $item = $this->$getter($name);
+
+            if ($item instanceof SchemaItem) {
             return $this->typeCache[$cid] = $item;
+            }
         }
 
         return $this->findSomethingNoThrowSchemas(
@@ -53,6 +59,7 @@ class Schema extends AbstractSchema
 
 
     /**
+    * @param Schema[] $schemas
     * {@inheritdoc}
     */
     protected function findSomethingNoThrowSchemas(
@@ -65,6 +72,9 @@ class Schema extends AbstractSchema
     ) : ? SchemaItem {
         foreach ($schemas as $childSchema) {
             if (!isset($calling[spl_object_hash($childSchema)])) {
+                /**
+                * @var SchemaItem|null $in
+                */
                 $in = $childSchema->findSomethingNoThrow($getter, $name, $namespace, $calling);
 
                 if ($in instanceof SchemaItem) {
@@ -77,6 +87,7 @@ class Schema extends AbstractSchema
     }
 
     /**
+     * @param string $getter
      * {@inheritdoc}
      */
     protected function findSomething(
@@ -100,6 +111,8 @@ class Schema extends AbstractSchema
     }
 
     /**
+    * @param string $namespace
+    * @param string $file
     * {@inheritdoc}
     */
     protected static function loadImportFreshKeys(
@@ -134,6 +147,9 @@ class Schema extends AbstractSchema
         Schema $schema,
         $file
     ) {
+        /**
+        * @var string $file
+        */
         $newSchema = Schema::setLoadedFile(
             $file,
             ($namespace ? new Schema() : $schema)
@@ -156,6 +172,11 @@ class Schema extends AbstractSchema
         Schema $schema,
         $file
     ) {
+        /**
+        * @var string $file
+        */
+        $file = $file;
+
         return $reader->schemaNode(
             static::loadImportFreshCallbacksNewSchema(
                 $namespace,

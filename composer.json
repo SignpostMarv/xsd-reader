@@ -36,7 +36,8 @@
     },
     "extra" : {
         "branch-alias" : {
-            "dev-master" : "1.0-dev"
+            "dev-static-analysis": "0.3-dev",
+            "dev-master" : "0.2-dev"
         }
     },
     "scripts": {

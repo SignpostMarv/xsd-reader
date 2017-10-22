@@ -78,28 +78,38 @@ class Group implements AttributeItem, AttributeContainer
             $node,
             $attGroup
         ) : void {
-            foreach ($node->childNodes as $childNode) {
-                switch ($childNode->localName) {
-                    case 'attribute':
-                        $attribute = Attribute::getAttributeFromAttributeOrRef(
-                            $schemaReader,
-                            $childNode,
-                            $schema,
-                            $node
-                        );
-                        $attGroup->addAttribute($attribute);
-                        break;
-                    case 'attributeGroup':
-                        self::findSomethingLikeThis(
-                            $schemaReader,
-                            $schema,
-                            $node,
-                            $childNode,
-                            $attGroup
-                        );
-                        break;
+            SchemaReaderLoadAbstraction::againstDOMNodeList(
+                $node,
+                function (
+                    DOMElement $node,
+                    DOMElement $childNode
+                ) use (
+                    $schemaReader,
+                    $schema,
+                    $attGroup
+                ) : void {
+                    switch ($childNode->localName) {
+                        case 'attribute':
+                            $attribute = Attribute::getAttributeFromAttributeOrRef(
+                                $schemaReader,
+                                $childNode,
+                                $schema,
+                                $node
+                            );
+                            $attGroup->addAttribute($attribute);
+                            break;
+                        case 'attributeGroup':
+                            self::findSomethingLikeThis(
+                                $schemaReader,
+                                $schema,
+                                $node,
+                                $childNode,
+                                $attGroup
+                            );
+                            break;
+                    }
                 }
-            }
+            );
         };
     }
 }

@@ -110,19 +110,28 @@ abstract class AbstractSchemaReader
     public static function getDocumentation(DOMElement $node) : string
     {
         $doc = '';
-        foreach ($node->childNodes as $childNode) {
-            if ($childNode->localName == "annotation") {
-                $doc .= static::getDocumentation($childNode);
-            } elseif ($childNode->localName == 'documentation') {
-                $doc .= ($childNode->nodeValue);
+        static::againstDOMNodeList(
+            $node,
+            function (
+                DOMElement $node,
+                DOMElement $childNode
+            ) use (
+                & $doc
+            ) : void {
+                if ($childNode->localName == "annotation") {
+                    $doc .= static::getDocumentation($childNode);
+                } elseif ($childNode->localName == 'documentation') {
+                    $doc .= $childNode->nodeValue;
+                }
             }
-        }
+        );
         $doc = preg_replace('/[\t ]+/', ' ', $doc);
         return trim($doc);
     }
 
     /**
     * @param mixed ...$args
+    * @param string[] $methods
     */
     public function maybeCallMethod(
         array $methods,
@@ -133,6 +142,9 @@ abstract class AbstractSchemaReader
         if ($childNode instanceof DOMElement && isset($methods[$key])) {
             $method = $methods[$key];
 
+            /**
+            * @var Closure|null $append
+            */
             $append = $this->$method(...$args);
 
             if ($append instanceof Closure) {
@@ -168,8 +180,20 @@ abstract class AbstractSchemaReader
             'simpleType' => [$this, 'loadSimpleType'],
         ];
 
-        foreach ($node->childNodes as $childNode) {
-            if ($childNode instanceof DOMElement) {
+        static::againstDOMNodeList(
+            $node,
+            function (
+                DOMElement $node,
+                DOMElement $childNode
+            ) use (
+                $schemaReaderMethods,
+                $schema,
+                $thisMethods,
+                & $functions
+            ) : void {
+                /**
+                * @var Closure|null $callback
+                */
                 $callback = $this->maybeCallCallableWithArgs(
                     $childNode,
                         [],
@@ -197,7 +221,7 @@ abstract class AbstractSchemaReader
                     $functions[] = $callback;
                 }
             }
-        }
+        );
 
         return $functions;
     }
@@ -358,20 +382,8 @@ abstract class AbstractSchemaReader
         bool $checkAbstract = false
     ) : void;
 
-    abstract protected function loadExtensionChildNode(
-        BaseComplexType $type,
-        DOMElement $node,
-        DOMElement $childNode
-    ) : void;
-
     abstract protected function loadExtension(
         BaseComplexType $type,
-        DOMElement $node
-    ) : void;
-
-    abstract protected function loadExtensionChildNodes(
-        BaseComplexType $type,
-        DOMNodeList $childNodes,
         DOMElement $node
     ) : void;
 
@@ -417,10 +429,18 @@ abstract class AbstractSchemaReader
     ) {
         list ($name, $namespace) = static::splitParts($node, $typeName);
 
+        /**
+        * @var string|null $namespace
+        */
         $namespace = $namespace ?: $schema->getTargetNamespace();
 
         try {
-            return $schema->$finder($name, $namespace);
+            /**
+            * @var ElementItem|Group|AttributeItem|AttributeGroup|Type $out
+            */
+            $out = $schema->$finder($name, $namespace);
+
+            return $out;
         } catch (TypeNotFoundException $e) {
             throw new TypeException(sprintf("Can't find %s named {%s}#%s, at line %d in %s ", strtolower(substr($finder, 4)), $namespace, $name, $node->getLineNo(), $node->ownerDocument->documentURI), 0, $e);
         }
@@ -433,28 +453,44 @@ abstract class AbstractSchemaReader
 
     public function fillItem(Item $element, DOMElement $node) : void
     {
-        foreach ($node->childNodes as $childNode) {
-            if (
-                in_array(
-                    $childNode->localName,
-                    [
-                        'complexType',
-                        'simpleType',
-                    ]
-                )
-            ) {
-                Type::loadTypeWithCallback(
-                    $this,
-                    $element->getSchema(),
-                    $childNode,
-                    function (Type $type) use ($element) : void {
-                        $element->setType($type);
-                    }
-                );
-                return;
+        /**
+        * @var bool $skip
+        */
+        $skip = false;
+        static::againstDOMNodeList(
+            $node,
+            function (
+                DOMElement $node,
+                DOMElement $childNode
+            ) use (
+                $element,
+                & $skip
+            ) : void {
+                if (
+                    ! $skip &&
+                    in_array(
+                        $childNode->localName,
+                        [
+                            'complexType',
+                            'simpleType',
+                        ]
+                    )
+                ) {
+                    Type::loadTypeWithCallback(
+                        $this,
+                        $element->getSchema(),
+                        $childNode,
+                        function (Type $type) use ($element) : void {
+                            $element->setType($type);
+                        }
+                    );
+                    $skip = true;
+                }
             }
+        );
+        if ($skip) {
+            return;
         }
-
         $this->fillItemNonLocalType($element, $node);
     }
 
@@ -506,9 +542,18 @@ abstract class AbstractSchemaReader
             $globalSchemas[static::XSD_NS]->addType(new SimpleType($globalSchemas[static::XSD_NS], "anySimpleType"));
             $globalSchemas[static::XSD_NS]->addType(new SimpleType($globalSchemas[static::XSD_NS], "anyType"));
 
-            $globalSchemas[static::XML_NS]->addSchema($globalSchemas[static::XSD_NS], static::XSD_NS);
-            $globalSchemas[static::XSD_NS]->addSchema($globalSchemas[static::XML_NS], static::XML_NS);
+            $globalSchemas[static::XML_NS]->addSchema(
+                $globalSchemas[static::XSD_NS],
+                (string) static::XSD_NS
+            );
+            $globalSchemas[static::XSD_NS]->addSchema(
+                $globalSchemas[static::XML_NS],
+                (string) static::XML_NS
+            );
 
+            /**
+            * @var Closure $callback
+            */
             foreach ($callbacks as $callback) {
                 $callback();
             }
@@ -584,5 +629,68 @@ abstract class AbstractSchemaReader
             throw new IOException("Can't load the file $file");
         }
         return $xml;
+    }
+
+    public static function againstDOMNodeList(
+        DOMElement $node,
+        Closure $againstNodeList
+    ) : void {
+        $limit = $node->childNodes->length;
+        for ($i = 0; $i < $limit; $i += 1) {
+            /**
+            * @var DOMNode $childNode
+            */
+            $childNode = $node->childNodes->item($i);
+
+            if ($childNode instanceof DOMElement) {
+                $againstNodeList(
+                    $node,
+                    $childNode
+                );
+            }
+        }
+    }
+
+    public function maybeCallMethodAgainstDOMNodeList(
+        DOMElement $node,
+        SchemaItem $type,
+        array $methods
+    ) : void {
+        static::againstDOMNodeList(
+            $node,
+            $this->CallbackGeneratorMaybeCallMethodAgainstDOMNodeList(
+                $type,
+                $methods
+            )
+        );
+    }
+
+    /**
+    * @return Closure
+    */
+    public function CallbackGeneratorMaybeCallMethodAgainstDOMNodeList(
+        SchemaItem $type,
+        array $methods
+    ) {
+        return function (
+            DOMElement $node,
+            DOMElement $childNode
+        ) use (
+            $methods,
+            $type
+        ) : void {
+            /**
+            * @var string[] $methods
+            */
+            $methods = $methods;
+
+            $this->maybeCallMethod(
+                $methods,
+                $childNode->localName,
+                $childNode,
+                $type,
+                $childNode
+            );
+        };
     }
 }
