@@ -1,49 +1,23 @@
 <?php
+
 namespace GoetasWebservices\XML\XSDReader;
 
 use Closure;
-use DOMDocument;
 use DOMElement;
-use DOMNode;
-use DOMNodeList;
-use GoetasWebservices\XML\XSDReader\Exception\IOException;
-use GoetasWebservices\XML\XSDReader\Exception\TypeException;
-use GoetasWebservices\XML\XSDReader\Schema\Attribute\Attribute;
-use GoetasWebservices\XML\XSDReader\Schema\Attribute\AttributeDef;
-use GoetasWebservices\XML\XSDReader\Schema\Attribute\AttributeItem;
-use GoetasWebservices\XML\XSDReader\Schema\Attribute\Group as AttributeGroup;
-use GoetasWebservices\XML\XSDReader\Schema\Element\Element;
 use GoetasWebservices\XML\XSDReader\Schema\Element\ElementContainer;
-use GoetasWebservices\XML\XSDReader\Schema\Element\ElementDef;
-use GoetasWebservices\XML\XSDReader\Schema\Element\ElementItem;
-use GoetasWebservices\XML\XSDReader\Schema\Element\ElementRef;
-use GoetasWebservices\XML\XSDReader\Schema\Element\Group;
-use GoetasWebservices\XML\XSDReader\Schema\Element\GroupRef;
-use GoetasWebservices\XML\XSDReader\Schema\Element\InterfaceSetMinMax;
-use GoetasWebservices\XML\XSDReader\Schema\Exception\TypeNotFoundException;
-use GoetasWebservices\XML\XSDReader\Schema\Inheritance\Base;
-use GoetasWebservices\XML\XSDReader\Schema\Inheritance\Extension;
-use GoetasWebservices\XML\XSDReader\Schema\Inheritance\Restriction;
-use GoetasWebservices\XML\XSDReader\Schema\Item;
-use GoetasWebservices\XML\XSDReader\Schema\Schema;
-use GoetasWebservices\XML\XSDReader\Schema\SchemaItem;
 use GoetasWebservices\XML\XSDReader\Schema\Type\BaseComplexType;
-use GoetasWebservices\XML\XSDReader\Schema\Type\ComplexType;
-use GoetasWebservices\XML\XSDReader\Schema\Type\ComplexTypeSimpleContent;
-use GoetasWebservices\XML\XSDReader\Schema\Type\SimpleType;
 use GoetasWebservices\XML\XSDReader\Schema\Type\Type;
-use GoetasWebservices\XML\XSDReader\Utils\UrlUtils;
 use RuntimeException;
 
 abstract class SchemaReaderCallbackAbstraction extends AbstractSchemaReader
 {
     /**
-    * @param mixed[][] $commonMethods
-    * @param mixed[][] $methods
-    * @param mixed[][] $commonArguments
-    *
-    * @return mixed
-    */
+     * @param mixed[][] $commonMethods
+     * @param mixed[][] $methods
+     * @param mixed[][] $commonArguments
+     *
+     * @return mixed
+     */
     protected function maybeCallCallableWithArgs(
         DOMElement $childNode,
         array $commonMethods = [],
@@ -51,21 +25,21 @@ abstract class SchemaReaderCallbackAbstraction extends AbstractSchemaReader
         array $commonArguments = []
     ) {
         foreach ($commonMethods as $commonMethodsSpec) {
-            list ($localNames, $callable, $args) = $commonMethodsSpec;
+            list($localNames, $callable, $args) = $commonMethodsSpec;
 
             /**
-            * @var string[] $localNames
-            */
+             * @var string[]
+             */
             $localNames = $localNames;
 
             /**
-            * @var callable $callable
-            */
+             * @var callable
+             */
             $callable = $callable;
 
             /**
-            * @var mixed[] $args
-            */
+             * @var mixed[]
+             */
             $args = $args;
 
             if (in_array($childNode->localName, $localNames)) {
@@ -73,19 +47,19 @@ abstract class SchemaReaderCallbackAbstraction extends AbstractSchemaReader
             }
         }
         foreach ($commonArguments as $commonArgumentSpec) {
-            /**
+            /*
             * @var mixed[] $commonArgumentSpec
             */
-            list ($callables, $args) = $commonArgumentSpec;
+            list($callables, $args) = $commonArgumentSpec;
 
             /**
-            * @var callable[] $callables
-            */
+             * @var callable[]
+             */
             $callables = $callables;
 
             /**
-            * @var mixed[]
-            */
+             * @var mixed[]
+             */
             $args = $args;
 
             if (isset($callables[$childNode->localName])) {
@@ -96,16 +70,16 @@ abstract class SchemaReaderCallbackAbstraction extends AbstractSchemaReader
             }
         }
         if (isset($methods[$childNode->localName])) {
-            list ($callable, $args) = $methods[$childNode->localName];
+            list($callable, $args) = $methods[$childNode->localName];
 
             /**
-            * @var callable $callable
-            */
+             * @var callable
+             */
             $callable = $callable;
 
             /**
-            * @var mixed[] $args
-            */
+             * @var mixed[]
+             */
             $args = $args;
 
             return call_user_func_array($callable, $args);
@@ -115,7 +89,7 @@ abstract class SchemaReaderCallbackAbstraction extends AbstractSchemaReader
     protected function maybeLoadSequenceFromElementContainer(
         BaseComplexType $type,
         DOMElement $childNode
-    ) : void {
+    ): void {
         $this->maybeLoadThingFromThing(
             $type,
             $childNode,
@@ -125,31 +99,31 @@ abstract class SchemaReaderCallbackAbstraction extends AbstractSchemaReader
     }
 
     /**
-    * @param string $instanceof
-    * @param string $passTo
-    */
+     * @param string $instanceof
+     * @param string $passTo
+     */
     protected function maybeLoadThingFromThing(
         Type $type,
         DOMElement $childNode,
         $instanceof,
         $passTo
-    ) : void {
-        if (! is_a($type, $instanceof, true)) {
+    ): void {
+        if (!is_a($type, $instanceof, true)) {
             /**
-            * @var string $class
-            */
+             * @var string
+             */
             $class = static::class;
             throw new RuntimeException(
-                'Argument 1 passed to ' .
-                __METHOD__ .
-                ' needs to be an instance of ' .
-                $instanceof .
-                ' when passed onto ' .
-                $class .
-                '::' .
-                $passTo .
-                '(), ' .
-                (string) get_class($type) .
+                'Argument 1 passed to '.
+                __METHOD__.
+                ' needs to be an instance of '.
+                $instanceof.
+                ' when passed onto '.
+                $class.
+                '::'.
+                $passTo.
+                '(), '.
+                (string) get_class($type).
                 ' given.'
             );
         }
@@ -162,14 +136,14 @@ abstract class SchemaReaderCallbackAbstraction extends AbstractSchemaReader
         DOMElement $node,
         Closure $callbackCallback,
         Closure $callback = null
-    ) : Closure {
+    ): Closure {
         return function (
         ) use (
             $type,
             $node,
             $callbackCallback,
             $callback
-        ) : void {
+        ): void {
             $this->runCallbackAgainstDOMNodeList(
                 $type,
                 $node,
@@ -184,7 +158,7 @@ abstract class SchemaReaderCallbackAbstraction extends AbstractSchemaReader
         DOMElement $node,
         Closure $againstNodeList,
         Closure $callback = null
-    ) : void {
+    ): void {
         $this->fillTypeNode($type, $node, true);
 
         static::againstDOMNodeList($node, $againstNodeList);
@@ -197,7 +171,7 @@ abstract class SchemaReaderCallbackAbstraction extends AbstractSchemaReader
     protected function maybeLoadExtensionFromBaseComplexType(
         Type $type,
         DOMElement $childNode
-    ) : void {
+    ): void {
         $this->maybeLoadThingFromThing(
             $type,
             $childNode,

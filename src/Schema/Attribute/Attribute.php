@@ -1,5 +1,7 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
+
 namespace GoetasWebservices\XML\XSDReader\Schema\Attribute;
 
 use DOMElement;
@@ -11,107 +13,112 @@ use GoetasWebservices\XML\XSDReader\SchemaReaderLoadAbstraction;
 class Attribute extends Item implements AttributeSingle
 {
     /**
-    * @var static|null
-    */
+     * @var static|null
+     */
     protected $fixed;
 
     /**
-    * @var static|null
-    */
+     * @var static|null
+     */
     protected $default;
 
     /**
-    * @var bool
-    */
+     * @var bool
+     */
     protected $qualified = true;
 
     /**
-    * @var bool
-    */
+     * @var bool
+     */
     protected $nil = false;
 
     /**
-    * @var string
-    */
+     * @var string
+     */
     protected $use = self::USE_OPTIONAL;
 
     /**
-    * @return static|null
-    */
-    public function getFixed() : ? self
+     * @return static|null
+     */
+    public function getFixed(): ? self
     {
         return $this->fixed;
     }
 
     /**
-    * @param static $fixed
-    *
-    * @return $this
-    */
-    public function setFixed(Attribute $fixed) : self
+     * @param static $fixed
+     *
+     * @return $this
+     */
+    public function setFixed(Attribute $fixed): self
     {
         $this->fixed = $fixed;
+
         return $this;
     }
 
     /**
-    * @return static|null
-    */
-    public function getDefault() : ? self
+     * @return static|null
+     */
+    public function getDefault(): ? self
     {
         return $this->default;
     }
 
     /**
-    * @param static $default
-    *
-    * @return $this
-    */
-    public function setDefault(Attribute $default) : self
+     * @param static $default
+     *
+     * @return $this
+     */
+    public function setDefault(Attribute $default): self
     {
         $this->default = $default;
+
         return $this;
     }
 
-    public function isQualified() : bool
+    public function isQualified(): bool
     {
         return $this->qualified;
     }
 
     /**
-    * {@inheritdoc}
-    */
-    public function setQualified(bool $qualified) : AttributeSingle
+     * {@inheritdoc}
+     */
+    public function setQualified(bool $qualified): AttributeSingle
     {
         $this->qualified = $qualified;
+
         return $this;
     }
 
-    public function isNil() : bool
+    public function isNil(): bool
     {
         return $this->nil;
     }
 
     /**
-    * {@inheritdoc}
-    */
-    public function setNil(bool $nil) : AttributeSingle
+     * {@inheritdoc}
+     */
+    public function setNil(bool $nil): AttributeSingle
     {
         $this->nil = $nil;
+
         return $this;
     }
 
-    public function getUse() : string
+    public function getUse(): string
     {
         return $this->use;
     }
 
     /**
-    * {@inheritdoc}
-    */
-    public function setUse(string $use) : AttributeSingle
+     * {@inheritdoc}
+     */
+    public function setUse(string $use): AttributeSingle
     {
         $this->use = $use;
+
         return $this;
     }
 
@@ -119,20 +126,21 @@ class Attribute extends Item implements AttributeSingle
         SchemaReaderLoadAbstraction $schemaReader,
         Schema $schema,
         DOMElement $node
-    ) : Attribute {
-        $attribute = new Attribute($schema, $node->getAttribute("name"));
+    ): Attribute {
+        $attribute = new self($schema, $node->getAttribute('name'));
         $attribute->setDoc(SchemaReader::getDocumentation($node));
         $schemaReader->fillItem($attribute, $node);
 
-        if ($node->hasAttribute("nillable")) {
-            $attribute->setNil($node->getAttribute("nillable") == "true");
+        if ($node->hasAttribute('nillable')) {
+            $attribute->setNil($node->getAttribute('nillable') == 'true');
         }
-        if ($node->hasAttribute("form")) {
-            $attribute->setQualified($node->getAttribute("form") == "qualified");
+        if ($node->hasAttribute('form')) {
+            $attribute->setQualified($node->getAttribute('form') == 'qualified');
         }
-        if ($node->hasAttribute("use")) {
-            $attribute->setUse($node->getAttribute("use"));
+        if ($node->hasAttribute('use')) {
+            $attribute->setUse($node->getAttribute('use'));
         }
+
         return $attribute;
     }
 
@@ -141,17 +149,17 @@ class Attribute extends Item implements AttributeSingle
         DOMElement $childNode,
         Schema $schema,
         DOMElement $node
-    ) : AttributeItem {
-        if ($childNode->hasAttribute("ref")) {
+    ): AttributeItem {
+        if ($childNode->hasAttribute('ref')) {
             /**
-            * @var AttributeItem $attribute
-            */
-            $attribute = $schemaReader->findSomething('findAttribute', $schema, $node, $childNode->getAttribute("ref"));
+             * @var AttributeItem
+             */
+            $attribute = $schemaReader->findSomething('findAttribute', $schema, $node, $childNode->getAttribute('ref'));
         } else {
             /**
-            * @var Attribute $attribute
-            */
-            $attribute = Attribute::loadAttribute($schemaReader, $schema, $childNode);
+             * @var Attribute
+             */
+            $attribute = self::loadAttribute($schemaReader, $schema, $childNode);
         }
 
         return $attribute;

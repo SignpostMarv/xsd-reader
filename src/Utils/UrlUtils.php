@@ -1,5 +1,7 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
+
 namespace GoetasWebservices\XML\XSDReader\Utils;
 
 class UrlUtils
@@ -7,7 +9,7 @@ class UrlUtils
     public static function resolveRelativeUrl(
         string $base,
         string $rel
-    ) : string {
+    ): string {
         if (!$rel) {
             return $base;
         } elseif (
@@ -22,7 +24,7 @@ class UrlUtils
                 $rel[0],
                 [
                     '#',
-                    '?'
+                    '?',
                 ]
             )
         ) {
@@ -35,12 +37,12 @@ class UrlUtils
     protected static function resolveRelativeUrlAfterEarlyChecks(
         string $base,
         string $rel
-    ) : string {
+    ): string {
         /* fix url file for Windows */
         $base = preg_replace('#^file:\/\/([^/])#', 'file:///\1', $base);
 
         /**
-         * @var mixed[] $parts
+         * @var mixed[]
          *
          * parse base URL and convert to local variables:
          * $scheme, $host, $path
@@ -57,7 +59,7 @@ class UrlUtils
                             ? preg_replace(
                                 '#/[^/]*$#',
                                 '',
-                                (string) $parts["path"]
+                                (string) $parts['path']
                             )
                             : ''
                     )
@@ -70,40 +72,41 @@ class UrlUtils
         string $rel,
         string $path,
         array $parts
-    ) : string {
+    ): string {
         /* Build absolute URL */
         $abs = '';
 
-        if (isset($parts["host"])) {
+        if (isset($parts['host'])) {
             $abs .= (string) $parts['host'];
         }
 
-        if (isset($parts["port"])) {
-            $abs .= ":" . (string) $parts["port"];
+        if (isset($parts['port'])) {
+            $abs .= ':'.(string) $parts['port'];
         }
 
-        $abs .= $path."/".$rel;
+        $abs .= $path.'/'.$rel;
         $abs = static::replaceSuperfluousSlashes($abs);
 
-        if (isset($parts["scheme"])) {
-            $abs = (string) $parts["scheme"] . '://' . $abs;
+        if (isset($parts['scheme'])) {
+            $abs = (string) $parts['scheme'].'://'.$abs;
         }
 
         return $abs;
     }
 
     /**
-        * replace superfluous slashes with a single slash.
-        * covers:
-        * //
-        * /./
-        * /foo/../
-        *
-        * @param string $abs
-        *
-        * @return string
-        */
-    protected static function replaceSuperfluousSlashes($abs) {
+     * replace superfluous slashes with a single slash.
+     * covers:
+     * //
+     * /./
+     * /foo/../.
+     *
+     * @param string $abs
+     *
+     * @return string
+     */
+    protected static function replaceSuperfluousSlashes($abs)
+    {
         $n = 1;
         do {
             $abs = preg_replace(
