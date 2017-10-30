@@ -128,6 +128,8 @@ class Schema extends AbstractSchema
 
     /**
      * {@inheritdoc}
+     *
+     * @param string $file
      */
     protected static function loadImportFreshCallbacksNewSchema(
         $namespace,
@@ -136,7 +138,7 @@ class Schema extends AbstractSchema
         $file
     ) {
         /**
-         * @var string
+         * @var Schema $newSchema
          */
         $newSchema = self::setLoadedFile(
             $file,

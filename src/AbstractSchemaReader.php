@@ -81,10 +81,6 @@ abstract class AbstractSchemaReader
         return $this->knownLocationSchemas[$remote];
     }
 
-    abstract protected function loadAttributeGroup(
-        Schema $schema,
-        DOMElement $node
-    ): Closure;
 
     abstract protected function loadAttributeOrElementDef(
         Schema $schema,
@@ -160,12 +156,15 @@ abstract class AbstractSchemaReader
         $schemaReaderMethods = [
             'include' => (Schema::class.'::loadImport'),
             'import' => (Schema::class.'::loadImport'),
+            'attributeGroup' => (
+                AttributeGroup::class.
+                '::loadAttributeGroup'
+            ),
         ];
 
         $thisMethods = [
             'element' => [$this, 'loadElementDef'],
             'attribute' => [$this, 'loadAttributeDef'],
-            'attributeGroup' => [$this, 'loadAttributeGroup'],
             'group' => [$this, 'loadGroup'],
             'complexType' => [$this, 'loadComplexType'],
             'simpleType' => [$this, 'loadSimpleType'],
@@ -187,25 +186,25 @@ abstract class AbstractSchemaReader
                  */
                 $callback = $this->maybeCallCallableWithArgs(
                     $childNode,
-                        [],
-                        [],
+                    [],
+                    [],
+                    [
                         [
+                            $schemaReaderMethods,
                             [
-                                $schemaReaderMethods,
-                                [
-                                    $this,
-                                    $schema,
-                                    $childNode,
-                                ],
+                                $this,
+                                $schema,
+                                $childNode,
                             ],
+                        ],
+                        [
+                            $thisMethods,
                             [
-                                $thisMethods,
-                                [
-                                    $schema,
-                                    $childNode,
-                                ],
+                                $schema,
+                                $childNode,
                             ],
-                        ]
+                        ],
+                    ]
                 );
 
                 if ($callback instanceof Closure) {

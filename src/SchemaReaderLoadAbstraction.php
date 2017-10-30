@@ -25,12 +25,6 @@ use GoetasWebservices\XML\XSDReader\Schema\Type\Type;
 
 abstract class SchemaReaderLoadAbstraction extends SchemaReaderFillAbstraction
 {
-    protected function loadAttributeGroup(
-        Schema $schema,
-        DOMElement $node
-    ): Closure {
-        return AttributeGroup::loadAttributeGroup($this, $schema, $node);
-    }
 
     protected function loadAttributeOrElementDef(
         Schema $schema,
