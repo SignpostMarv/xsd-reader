@@ -7,7 +7,6 @@ namespace GoetasWebservices\XML\XSDReader\Schema\Inheritance;
 use DOMElement;
 use GoetasWebservices\XML\XSDReader\Schema\Type\Type;
 use GoetasWebservices\XML\XSDReader\SchemaReader;
-use GoetasWebservices\XML\XSDReader\SchemaReaderLoadAbstraction;
 
 class Restriction extends Base
 {
@@ -48,7 +47,7 @@ class Restriction extends Base
     }
 
     public static function loadRestriction(
-        SchemaReaderLoadAbstraction $reader,
+        SchemaReader $reader,
         Type $type,
         DOMElement $node
     ): void {
@@ -70,7 +69,7 @@ class Restriction extends Base
                 $addCallback
             );
         }
-        SchemaReaderLoadAbstraction::againstDOMNodeList(
+        SchemaReader::againstDOMNodeList(
             $node,
             function (
                 DOMElement $node,

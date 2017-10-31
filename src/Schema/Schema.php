@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace GoetasWebservices\XML\XSDReader\Schema;
 
-use GoetasWebservices\XML\XSDReader\SchemaReaderLoadAbstraction;
+use GoetasWebservices\XML\XSDReader\SchemaReader;
 use GoetasWebservices\XML\XSDReader\Schema\Exception\TypeNotFoundException;
 
 class Schema extends AbstractSchema
@@ -104,7 +104,7 @@ class Schema extends AbstractSchema
      *                          {@inheritdoc}
      */
     protected static function loadImportFreshKeys(
-        SchemaReaderLoadAbstraction $reader,
+        SchemaReader $reader,
         $namespace,
         $file
     ) {
@@ -133,7 +133,7 @@ class Schema extends AbstractSchema
      */
     protected static function loadImportFreshCallbacksNewSchema(
         $namespace,
-        SchemaReaderLoadAbstraction $reader,
+        SchemaReader $reader,
         Schema $schema,
         $file
     ) {
@@ -158,7 +158,7 @@ class Schema extends AbstractSchema
      */
     protected static function loadImportFreshCallbacks(
         $namespace,
-        SchemaReaderLoadAbstraction $reader,
+        SchemaReader $reader,
         Schema $schema,
         $file
     ) {
@@ -188,7 +188,7 @@ class Schema extends AbstractSchema
      */
     protected static function loadImportFresh(
         $namespace,
-        SchemaReaderLoadAbstraction $reader,
+        SchemaReader $reader,
         Schema $schema,
         $file
     ) {

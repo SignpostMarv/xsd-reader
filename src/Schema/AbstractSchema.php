@@ -6,7 +6,7 @@ use Closure;
 use DOMElement;
 use RuntimeException;
 use GoetasWebservices\XML\XSDReader\AbstractSchemaReader;
-use GoetasWebservices\XML\XSDReader\SchemaReaderLoadAbstraction;
+use GoetasWebservices\XML\XSDReader\SchemaReader;
 use GoetasWebservices\XML\XSDReader\Schema\Type\Type;
 use GoetasWebservices\XML\XSDReader\Schema\Attribute\Group as AttributeGroup;
 use GoetasWebservices\XML\XSDReader\Schema\Element\Group;
@@ -472,7 +472,7 @@ abstract class AbstractSchema
      * @return Closure
      */
     public static function loadImport(
-        SchemaReaderLoadAbstraction $reader,
+        SchemaReader $reader,
         Schema $schema,
         DOMElement $node
     ) {
@@ -502,7 +502,7 @@ abstract class AbstractSchema
      * @return mixed[]
      */
     abstract protected static function loadImportFreshKeys(
-        SchemaReaderLoadAbstraction $reader,
+        SchemaReader $reader,
         $namespace,
         $file
     );
@@ -515,7 +515,7 @@ abstract class AbstractSchema
      */
     abstract protected static function loadImportFreshCallbacksNewSchema(
         $namespace,
-        SchemaReaderLoadAbstraction $reader,
+        SchemaReader $reader,
         Schema $schema,
         $file
     );
@@ -528,7 +528,7 @@ abstract class AbstractSchema
      */
     abstract protected static function loadImportFreshCallbacks(
         $namespace,
-        SchemaReaderLoadAbstraction $reader,
+        SchemaReader $reader,
         Schema $schema,
         $file
     );
@@ -541,7 +541,7 @@ abstract class AbstractSchema
      */
     abstract protected static function loadImportFresh(
         $namespace,
-        SchemaReaderLoadAbstraction $reader,
+        SchemaReader $reader,
         Schema $schema,
         $file
     );

@@ -9,7 +9,6 @@ use DOMElement;
 use GoetasWebservices\XML\XSDReader\Schema\Attribute\AttributeItemTrait;
 use GoetasWebservices\XML\XSDReader\Schema\Schema;
 use GoetasWebservices\XML\XSDReader\SchemaReader;
-use GoetasWebservices\XML\XSDReader\SchemaReaderLoadAbstraction;
 
 class Group implements ElementItem, ElementContainer
 {
@@ -81,7 +80,7 @@ class Group implements ElementItem, ElementContainer
     }
 
     public static function loadGroup(
-        SchemaReaderLoadAbstraction $reader,
+        SchemaReader $reader,
         Schema $schema,
         DOMElement $node
     ): Closure {
