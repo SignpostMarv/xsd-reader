@@ -20,13 +20,14 @@ use GoetasWebservices\XML\XSDReader\Schema\Inheritance\Extension;
 use GoetasWebservices\XML\XSDReader\Schema\Inheritance\Restriction;
 use GoetasWebservices\XML\XSDReader\Schema\Item;
 use GoetasWebservices\XML\XSDReader\Schema\Schema;
+use GoetasWebservices\XML\XSDReader\Schema\SchemaItem;
 use GoetasWebservices\XML\XSDReader\Schema\Type\BaseComplexType;
 use GoetasWebservices\XML\XSDReader\Schema\Type\ComplexType;
 use GoetasWebservices\XML\XSDReader\Schema\Type\ComplexTypeSimpleContent;
 use GoetasWebservices\XML\XSDReader\Schema\Type\SimpleType;
 use GoetasWebservices\XML\XSDReader\Schema\Type\Type;
 
-class SchemaReader extends SchemaReaderFindAbstraction
+class SchemaReader extends SchemaReaderCallbackAbstraction
 {
     /**
      * @return mixed[]
@@ -549,5 +550,35 @@ class SchemaReader extends SchemaReaderFindAbstraction
         }
 
         $element->setType($type);
+    }
+
+    protected function findSomeType(
+        SchemaItem $fromThis,
+        DOMElement $node,
+        string $attributeName
+    ): SchemaItem {
+        return $this->findSomeTypeFromAttribute(
+            $fromThis,
+            $node,
+            $node->getAttribute($attributeName)
+        );
+    }
+
+    protected function findSomeTypeFromAttribute(
+        SchemaItem $fromThis,
+        DOMElement $node,
+        string $attributeName
+    ): SchemaItem {
+        /**
+         * @var SchemaItem
+         */
+        $out = $this->findSomething(
+            'findType',
+            $fromThis->getSchema(),
+            $node,
+            $attributeName
+        );
+
+        return $out;
     }
 }
