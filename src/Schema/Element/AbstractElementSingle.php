@@ -26,7 +26,7 @@ class AbstractElementSingle extends Item implements ElementSingle
      */
     protected $nil = false;
 
-    public function isQualified() : bool
+    public function isQualified(): bool
     {
         return $this->qualified;
     }
@@ -34,14 +34,14 @@ class AbstractElementSingle extends Item implements ElementSingle
     /**
      * {@inheritdoc}
      */
-    public function setQualified(bool $qualified) : ElementSingle
+    public function setQualified(bool $qualified): ElementSingle
     {
         $this->qualified = $qualified;
 
         return $this;
     }
 
-    public function isNil() : bool
+    public function isNil(): bool
     {
         return $this->nil;
     }
@@ -49,14 +49,14 @@ class AbstractElementSingle extends Item implements ElementSingle
     /**
      * {@inheritdoc}
      */
-    public function setNil(bool $nil) : ElementSingle
+    public function setNil(bool $nil): ElementSingle
     {
         $this->nil = $nil;
 
         return $this;
     }
 
-    public function getMin() : int
+    public function getMin(): int
     {
         return $this->min;
     }
@@ -64,14 +64,14 @@ class AbstractElementSingle extends Item implements ElementSingle
     /**
      * {@inheritdoc}
      */
-    public function setMin(int $min) : ElementSingle
+    public function setMin(int $min): ElementSingle
     {
         $this->min = $min;
 
         return $this;
     }
 
-    public function getMax() : int
+    public function getMax(): int
     {
         return $this->max;
     }
@@ -79,7 +79,7 @@ class AbstractElementSingle extends Item implements ElementSingle
     /**
      * {@inheritdoc}
      */
-    public function setMax(int $max) : ElementSingle
+    public function setMax(int $max): ElementSingle
     {
         $this->max = $max;
 

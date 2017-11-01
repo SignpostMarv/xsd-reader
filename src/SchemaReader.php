@@ -564,7 +564,7 @@ class SchemaReader
         );
     }
 
-    protected function findSomeTypeType(SchemaItem $element, DOMElement $node, string $attributeName) : Type
+    protected function findSomeTypeType(SchemaItem $element, DOMElement $node, string $attributeName): Type
     {
         /**
          * @var Type $out
@@ -577,7 +577,7 @@ class SchemaReader
     protected function findSomeTypeTypeFromAttribute(
         SchemaItem $element,
         DOMElement $node
-    ) : Type {
+    ): Type {
         /**
          * @var Type $out
          */
@@ -590,7 +590,7 @@ class SchemaReader
         return $out;
     }
 
-    protected function findSomeSimpleType(SchemaItem $type, DOMElement $node) : SimpleType
+    protected function findSomeSimpleType(SchemaItem $type, DOMElement $node): SimpleType
     {
         /**
          * @var SimpleType $out
@@ -622,7 +622,7 @@ class SchemaReader
         SchemaItem $type,
         DOMElement $node,
         string $typeName
-    ) : SimpleType {
+    ): SimpleType {
         /**
          * @var SimpleType $out
          */
@@ -1043,7 +1043,7 @@ class SchemaReader
         }
     }
 
-    protected function findSomeElementDef(Schema $schema, DOMElement $node, string $typeName) : ElementDef
+    protected function findSomeElementDef(Schema $schema, DOMElement $node, string $typeName): ElementDef
     {
         /**
          * @var ElementDef $out

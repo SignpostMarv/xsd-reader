@@ -117,7 +117,7 @@ class Schema
         SchemaReader $reader,
         string $namespace,
         string $file
-    ) : array {
+    ): array {
         $globalSchemaInfo = $reader->getGlobalSchemaInfo();
 
         $keys = [];
@@ -141,7 +141,7 @@ class Schema
         SchemaReader $reader,
         Schema $schema,
         string $file
-    ) : Schema {
+    ): Schema {
         /**
          * @var Schema $newSchema
          */
@@ -159,14 +159,14 @@ class Schema
     }
 
     /**
-    * @return Closure[]
-    */
+     * @return Closure[]
+     */
     protected static function loadImportFreshCallbacks(
         string $namespace,
         SchemaReader $reader,
         Schema $schema,
         string $file
-    ) : array {
+    ): array {
         /**
          * @var string
          */
@@ -193,7 +193,7 @@ class Schema
         SchemaReader $reader,
         Schema $schema,
         string $file
-    ) : Closure {
+    ): Closure {
         return function () use ($namespace, $reader, $schema, $file): void {
             foreach (
                 static::loadImportFreshCallbacks(
@@ -466,7 +466,7 @@ class Schema
         return sprintf('Target namespace %s', (string) $this->getTargetNamespace());
     }
 
-    public function findType(string $name, string $namespace = null) : Type
+    public function findType(string $name, string $namespace = null): Type
     {
         /**
          * @var Type
@@ -476,7 +476,7 @@ class Schema
         return $out;
     }
 
-    public function findGroup(string $name, string $namespace = null) : Group
+    public function findGroup(string $name, string $namespace = null): Group
     {
         /**
          * @var Group
@@ -486,7 +486,7 @@ class Schema
         return $out;
     }
 
-    public function findElement(string $name, string $namespace = null) : ElementDef
+    public function findElement(string $name, string $namespace = null): ElementDef
     {
         /**
          * @var ElementDef
@@ -496,7 +496,7 @@ class Schema
         return $out;
     }
 
-    public function findAttribute(string $name, string $namespace = null) : AttributeItem
+    public function findAttribute(string $name, string $namespace = null): AttributeItem
     {
         /**
          * @var AttributeItem
@@ -506,7 +506,7 @@ class Schema
         return $out;
     }
 
-    public function findAttributeGroup(string $name, string $namespace = null) : AttributeGroup
+    public function findAttributeGroup(string $name, string $namespace = null): AttributeGroup
     {
         /**
          * @var AttributeGroup
@@ -521,7 +521,7 @@ class Schema
      */
     protected static $loadedFiles = array();
 
-    public static function hasLoadedFile(string ...$keys) : bool
+    public static function hasLoadedFile(string ...$keys): bool
     {
         foreach ($keys as $key) {
             if (isset(self::$loadedFiles[$key])) {
@@ -535,7 +535,7 @@ class Schema
     /**
      * @throws RuntimeException if loaded file not found
      */
-    public static function getLoadedFile(string ...$keys) : Schema
+    public static function getLoadedFile(string ...$keys): Schema
     {
         foreach ($keys as $key) {
             if (isset(self::$loadedFiles[$key])) {
@@ -546,7 +546,7 @@ class Schema
         throw new RuntimeException('Loaded file was not found!');
     }
 
-    public static function setLoadedFile(string $key, Schema $schema) : Schema
+    public static function setLoadedFile(string $key, Schema $schema): Schema
     {
         self::$loadedFiles[$key] = $schema;
 
@@ -573,7 +573,7 @@ class Schema
         SchemaReader $reader,
         Schema $schema,
         DOMElement $node
-    ) : Closure {
+    ): Closure {
         $base = urldecode($node->ownerDocument->documentURI);
         $file = UrlUtils::resolveRelativeUrl($base, $node->getAttribute('schemaLocation'));
 
