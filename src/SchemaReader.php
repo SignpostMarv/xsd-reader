@@ -195,8 +195,7 @@ class SchemaReader
                 $childNode
             );
         } else {
-            $element = Element::loadElement(
-                $this,
+            $element = $this->loadElement(
                 $elementContainer->getSchema(),
                 $childNode
             );
@@ -1586,6 +1585,35 @@ class SchemaReader
                 $callback();
             }
         };
+    }
+
+    public function loadElement(
+        Schema $schema,
+        DOMElement $node
+    ): Element {
+        $element = new Element($schema, $node->getAttribute('name'));
+        $element->setDoc(SchemaReader::getDocumentation($node));
+
+        $this->fillItem($element, $node);
+
+        SchemaReader::maybeSetMax($element, $node);
+        SchemaReader::maybeSetMin($element, $node);
+
+        $xp = new \DOMXPath($node->ownerDocument);
+        $xp->registerNamespace('xs', 'http://www.w3.org/2001/XMLSchema');
+
+        if ($xp->query('ancestor::xs:choice', $node)->length) {
+            $element->setMin(0);
+        }
+
+        if ($node->hasAttribute('nillable')) {
+            $element->setNil($node->getAttribute('nillable') == 'true');
+        }
+        if ($node->hasAttribute('form')) {
+            $element->setQualified($node->getAttribute('form') == 'qualified');
+        }
+
+        return $element;
     }
 
     public static function loadElementRef(
