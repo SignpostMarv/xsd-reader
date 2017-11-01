@@ -270,19 +270,19 @@ class SchemaReader
         DOMElement $node
     ): Group {
         $group = new Group($schema, $node->getAttribute('name'));
-        $group->setDoc(SchemaReader::getDocumentation($node));
+        $group->setDoc(self::getDocumentation($node));
 
         if ($node->hasAttribute('maxOccurs')) {
             /**
              * @var GroupRef
              */
-            $group = SchemaReader::maybeSetMax(new GroupRef($group), $node);
+            $group = self::maybeSetMax(new GroupRef($group), $node);
         }
         if ($node->hasAttribute('minOccurs')) {
             /**
              * @var GroupRef
              */
-            $group = SchemaReader::maybeSetMin(
+            $group = self::maybeSetMin(
                 $group instanceof GroupRef ? $group : new GroupRef($group),
                 $node
             );
@@ -1593,10 +1593,10 @@ class SchemaReader
         DOMElement $node
     ): ElementRef {
         $ref = new ElementRef($referenced);
-        $ref->setDoc(SchemaReader::getDocumentation($node));
+        $ref->setDoc(self::getDocumentation($node));
 
-        SchemaReader::maybeSetMax($ref, $node);
-        SchemaReader::maybeSetMin($ref, $node);
+        self::maybeSetMax($ref, $node);
+        self::maybeSetMin($ref, $node);
         if ($node->hasAttribute('nillable')) {
             $ref->setNil($node->getAttribute('nillable') == 'true');
         }

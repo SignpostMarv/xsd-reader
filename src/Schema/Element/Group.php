@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace GoetasWebservices\XML\XSDReader\Schema\Element;
 
-use Closure;
-use DOMElement;
 use GoetasWebservices\XML\XSDReader\Schema\Attribute\AttributeItemTrait;
 use GoetasWebservices\XML\XSDReader\Schema\Schema;
 
