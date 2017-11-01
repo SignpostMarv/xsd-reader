@@ -1619,18 +1619,15 @@ class SchemaReader
         return $ref;
     }
 
-    /**
-     * @return \Closure
-     */
     public function loadAttributeGroup(
         Schema $schema,
         DOMElement $node
-    ) {
+    ): Closure {
         $attGroup = new AttributeGroup($schema, $node->getAttribute('name'));
         $attGroup->setDoc(self::getDocumentation($node));
         $schema->addAttributeGroup($attGroup);
 
-        return function () use ($schema, $node, $attGroup) {
+        return function () use ($schema, $node, $attGroup): void {
             SchemaReader::againstDOMNodeList(
                 $node,
                 function (
@@ -1639,7 +1636,7 @@ class SchemaReader
                 ) use (
                     $schema,
                     $attGroup
-                ) {
+                ): void {
                     switch ($childNode->localName) {
                         case 'attribute':
                             $attribute = $this->getAttributeFromAttributeOrRef(
@@ -1663,14 +1660,11 @@ class SchemaReader
         };
     }
 
-    /**
-     * @return AttributeItem
-     */
     public function getAttributeFromAttributeOrRef(
         DOMElement $childNode,
         Schema $schema,
         DOMElement $node
-    ) {
+    ): AttributeItem {
         if ($childNode->hasAttribute('ref')) {
             /**
              * @var AttributeItem
@@ -1686,13 +1680,10 @@ class SchemaReader
         return $attribute;
     }
 
-    /**
-     * @return Attribute
-     */
     public function loadAttribute(
         Schema $schema,
         DOMElement $node
-    ) {
+    ): Attribute {
         $attribute = new Attribute($schema, $node->getAttribute('name'));
         $attribute->setDoc(self::getDocumentation($node));
         $this->fillItem($attribute, $node);
@@ -1715,7 +1706,7 @@ class SchemaReader
         DOMElement $childNode,
         Schema $schema,
         DOMElement $node
-    ) {
+    ): void {
         $attribute = $this->getAttributeFromAttributeOrRef(
             $childNode,
             $schema,
@@ -1730,7 +1721,7 @@ class SchemaReader
         DOMElement $node,
         DOMElement $childNode,
         AttributeContainer $addToThis
-    ) {
+    ): void {
         /**
          * @var AttributeItem
          */
