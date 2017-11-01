@@ -9,88 +9,8 @@ use GoetasWebservices\XML\XSDReader\Schema\Item;
 use GoetasWebservices\XML\XSDReader\Schema\Schema;
 use GoetasWebservices\XML\XSDReader\SchemaReader;
 
-class Element extends Item implements ElementItem, ElementSingle
+class Element extends AbstractElementSingle implements ElementItem
 {
-    /**
-     * @var int
-     */
-    protected $min = 1;
-
-    /**
-     * @var int
-     */
-    protected $max = 1;
-
-    /**
-     * @var bool
-     */
-    protected $qualified = false;
-
-    /**
-     * @var bool
-     */
-    protected $nil = false;
-
-    public function getMin(): int
-    {
-        return $this->min;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setMin(int $min): self
-    {
-        $this->min = $min;
-
-        return $this;
-    }
-
-    public function getMax(): int
-    {
-        return $this->max;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setMax(int $max): self
-    {
-        $this->max = $max;
-
-        return $this;
-    }
-
-    public function isQualified(): bool
-    {
-        return $this->qualified;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setQualified(bool $qualified): ElementSingle
-    {
-        $this->qualified = $qualified;
-
-        return $this;
-    }
-
-    public function isNil(): bool
-    {
-        return $this->nil;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setNil(bool $nil): ElementSingle
-    {
-        $this->nil = $nil;
-
-        return $this;
-    }
-
     public static function loadElement(
         SchemaReader $reader,
         Schema $schema,

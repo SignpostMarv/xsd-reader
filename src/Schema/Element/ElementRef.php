@@ -9,32 +9,12 @@ use GoetasWebservices\XML\XSDReader\Schema\Item;
 use GoetasWebservices\XML\XSDReader\Schema\Type\Type;
 use GoetasWebservices\XML\XSDReader\SchemaReader;
 
-class ElementRef extends Item implements ElementSingle
+class ElementRef extends AbstractElementSingle
 {
     /**
      * @var ElementDef
      */
     protected $wrapped;
-
-    /**
-     * @var int
-     */
-    protected $min = 1;
-
-    /**
-     * @var int
-     */
-    protected $max = 1;
-
-    /**
-     * @var bool
-     */
-    protected $qualified = true;
-
-    /**
-     * @var bool
-     */
-    protected $nil = false;
 
     public function __construct(ElementDef $element)
     {
@@ -50,66 +30,6 @@ class ElementRef extends Item implements ElementSingle
     public function getType(): ? Type
     {
         return $this->wrapped->getType();
-    }
-
-    public function getMin(): int
-    {
-        return $this->min;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setMin(int $min): self
-    {
-        $this->min = $min;
-
-        return $this;
-    }
-
-    public function getMax(): int
-    {
-        return $this->max;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setMax(int $max): self
-    {
-        $this->max = $max;
-
-        return $this;
-    }
-
-    public function isQualified(): bool
-    {
-        return $this->qualified;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setQualified(bool $qualified): ElementSingle
-    {
-        $this->qualified = $qualified;
-
-        return $this;
-    }
-
-    public function isNil(): bool
-    {
-        return $this->nil;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setNil(bool $nil): ElementSingle
-    {
-        $this->nil = $nil;
-
-        return $this;
     }
 
     public static function loadElementRef(
