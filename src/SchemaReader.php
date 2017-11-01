@@ -184,7 +184,11 @@ class SchemaReader
             /**
              * @var ElementDef $referencedElement
              */
-            $referencedElement = $this->findSomething('findElement', $elementContainer->getSchema(), $node, $childNode->getAttribute('ref'));
+            $referencedElement = $this->findSomeElementDef(
+                $elementContainer->getSchema(),
+                $node,
+                $childNode->getAttribute('ref')
+            );
             $element = ElementRef::loadElementRef(
                 $referencedElement,
                 $childNode
@@ -386,10 +390,7 @@ class SchemaReader
     protected function loadList(SimpleType $type, DOMElement $node): void
     {
         if ($node->hasAttribute('itemType')) {
-            /**
-             * @var SimpleType
-             */
-            $listType = $this->findSomeType($type, $node, 'itemType');
+            $listType = $this->findSomeSimpleType($type, $node);
             $type->setList($listType);
         } else {
             $addCallback = function (SimpleType $list) use ($type): void {
@@ -410,10 +411,7 @@ class SchemaReader
         if ($node->hasAttribute('memberTypes')) {
             $types = preg_split('/\s+/', $node->getAttribute('memberTypes'));
             foreach ($types as $typeName) {
-                /**
-                 * @var SimpleType
-                 */
-                $unionType = $this->findSomeTypeFromAttribute(
+                $unionType = $this->findSomeSimpleTypeFromAttribute(
                     $type,
                     $node,
                     $typeName
@@ -543,18 +541,11 @@ class SchemaReader
         DOMElement $node
     ): void {
         if ($node->getAttribute('type')) {
-            /**
-             * @var Type
-             */
-            $type = $this->findSomeType($element, $node, 'type');
+            $type = $this->findSomeTypeType($element, $node, 'type');
         } else {
-            /**
-             * @var Type
-             */
-            $type = $this->findSomeTypeFromAttribute(
+            $type = $this->findSomeTypeTypeFromAttribute(
                 $element,
-                $node,
-                ($node->lookupPrefix(self::XSD_NS).':anyType')
+                $node
             );
         }
 
@@ -573,6 +564,42 @@ class SchemaReader
         );
     }
 
+    protected function findSomeTypeType(SchemaItem $element, DOMElement $node, string $attributeName) : Type
+    {
+        /**
+         * @var Type $out
+         */
+        $out = $this->findSomeType($element, $node, $attributeName);
+
+        return $out;
+    }
+
+    protected function findSomeTypeTypeFromAttribute(
+        SchemaItem $element,
+        DOMElement $node
+    ) : Type {
+        /**
+         * @var Type $out
+         */
+        $out = $this->findSomeTypeFromAttribute(
+            $element,
+            $node,
+            ($node->lookupPrefix(self::XSD_NS).':anyType')
+        );
+
+        return $out;
+    }
+
+    protected function findSomeSimpleType(SchemaItem $type, DOMElement $node) : SimpleType
+    {
+        /**
+         * @var SimpleType $out
+         */
+        $out = $this->findSomeType($type, $node, 'itemType');
+
+        return $out;
+    }
+
     protected function findSomeTypeFromAttribute(
         SchemaItem $fromThis,
         DOMElement $node,
@@ -586,6 +613,23 @@ class SchemaReader
             $fromThis->getSchema(),
             $node,
             $attributeName
+        );
+
+        return $out;
+    }
+
+    protected function findSomeSimpleTypeFromAttribute(
+        SchemaItem $type,
+        DOMElement $node,
+        string $typeName
+    ) : SimpleType {
+        /**
+         * @var SimpleType $out
+         */
+        $out = $this->findSomeTypeFromAttribute(
+            $type,
+            $node,
+            $typeName
         );
 
         return $out;
@@ -965,10 +1009,7 @@ class SchemaReader
         Base $setBaseOnThis,
         DOMElement $node
     ): void {
-        /**
-         * @var Type
-         */
-        $parent = $this->findSomeType($type, $node, 'base');
+        $parent = $this->findSomeTypeType($type, $node, 'base');
         $setBaseOnThis->setBase($parent);
     }
 
@@ -1000,6 +1041,16 @@ class SchemaReader
         } catch (TypeNotFoundException $e) {
             throw new TypeException(sprintf("Can't find %s named {%s}#%s, at line %d in %s ", strtolower(substr($finder, 4)), $namespace, $name, $node->getLineNo(), $node->ownerDocument->documentURI), 0, $e);
         }
+    }
+
+    protected function findSomeElementDef(Schema $schema, DOMElement $node, string $typeName) : ElementDef
+    {
+        /**
+         * @var ElementDef $out
+         */
+        $out = $this->findSomething('findElement', $schema, $node, $typeName);
+
+        return $out;
     }
 
     public function fillItem(Item $element, DOMElement $node): void

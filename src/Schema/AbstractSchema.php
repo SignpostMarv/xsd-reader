@@ -30,7 +30,7 @@ abstract class AbstractSchema
     protected $attributesQualification = false;
 
     /**
-     * @var string|null
+     * @var ?string
      */
     protected $targetNamespace;
 
@@ -176,7 +176,7 @@ abstract class AbstractSchema
                 throw new SchemaException(
                     sprintf(
                         "The target namespace ('%s') for schema, does not match the declared namespace '%s'",
-                        $schema->getTargetNamespace(),
+                        (string) $schema->getTargetNamespace(),
                         $namespace
                     )
                 );
@@ -277,7 +277,7 @@ abstract class AbstractSchema
 
     public function __toString()
     {
-        return sprintf('Target namespace %s', $this->getTargetNamespace());
+        return sprintf('Target namespace %s', (string) $this->getTargetNamespace());
     }
 
     /**
@@ -464,17 +464,11 @@ abstract class AbstractSchema
         $this->setDoc(SchemaReader::getDocumentation($node));
     }
 
-    /**
-     * @param string $file
-     * @param string $namespace
-     *
-     * @return Closure
-     */
     public static function loadImport(
         SchemaReader $reader,
         Schema $schema,
         DOMElement $node
-    ) {
+    ) : Closure {
         $base = urldecode($node->ownerDocument->documentURI);
         $file = UrlUtils::resolveRelativeUrl($base, $node->getAttribute('schemaLocation'));
 

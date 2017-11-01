@@ -12,12 +12,12 @@ use GoetasWebservices\XML\XSDReader\SchemaReader;
 class Attribute extends Item implements AttributeSingle
 {
     /**
-     * @var static|null
+     * @var self|null
      */
     protected $fixed;
 
     /**
-     * @var static|null
+     * @var self|null
      */
     protected $default;
 
@@ -37,7 +37,7 @@ class Attribute extends Item implements AttributeSingle
     protected $use = self::USE_OPTIONAL;
 
     /**
-     * @return static|null
+     * @return self|null
      */
     public function getFixed(): ? self
     {
@@ -45,8 +45,6 @@ class Attribute extends Item implements AttributeSingle
     }
 
     /**
-     * @param static $fixed
-     *
      * @return $this
      */
     public function setFixed(Attribute $fixed): self
@@ -57,7 +55,7 @@ class Attribute extends Item implements AttributeSingle
     }
 
     /**
-     * @return static|null
+     * @return self|null
      */
     public function getDefault(): ? self
     {
@@ -65,8 +63,6 @@ class Attribute extends Item implements AttributeSingle
     }
 
     /**
-     * @param static $default
-     *
      * @return $this
      */
     public function setDefault(Attribute $default): self
