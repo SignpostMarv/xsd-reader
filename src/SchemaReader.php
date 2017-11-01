@@ -1339,4 +1339,117 @@ class SchemaReader
             call_user_func($func);
         }
     }
+
+    public function loadImport(
+        Schema $schema,
+        DOMElement $node
+    ): Closure {
+        $base = urldecode($node->ownerDocument->documentURI);
+        $file = UrlUtils::resolveRelativeUrl($base, $node->getAttribute('schemaLocation'));
+
+        $namespace = $node->getAttribute('namespace');
+
+        $keys = $this->loadImportFreshKeys($namespace, $file);
+
+        if (
+            Schema::hasLoadedFile(...$keys)
+        ) {
+            $schema->addSchema(Schema::getLoadedFile(...$keys));
+
+            return function (): void {
+            };
+        }
+
+        return $this->loadImportFresh($namespace, $schema, $file);
+    }
+
+    protected function loadImportFreshKeys(
+        SchemaReader $this,
+        string $namespace,
+        string $file
+    ): array {
+        $globalSchemaInfo = $this->getGlobalSchemaInfo();
+
+        $keys = [];
+
+        if (isset($globalSchemaInfo[$namespace])) {
+            $keys[] = $globalSchemaInfo[$namespace];
+        }
+
+        $keys[] = $this->getNamespaceSpecificFileIndex(
+            $file,
+            $namespace
+        );
+
+        $keys[] = $file;
+
+        return $keys;
+    }
+
+    protected function loadImportFreshCallbacksNewSchema(
+        string $namespace,
+        Schema $schema,
+        string $file
+    ): Schema {
+        /**
+         * @var Schema $newSchema
+         */
+        $newSchema = self::setLoadedFile(
+            $file,
+            ($namespace ? new self() : $schema)
+        );
+
+        if ($namespace) {
+            $newSchema->addSchema($this->getGlobalSchema());
+            $schema->addSchema($newSchema);
+        }
+
+        return $newSchema;
+    }
+
+    /**
+     * @return Closure[]
+     */
+    protected function loadImportFreshCallbacks(
+        string $namespace,
+        Schema $schema,
+        string $file
+    ): array {
+        /**
+         * @var string
+         */
+        $file = $file;
+
+        return $this->schemaNode(
+            $this->loadImportFreshCallbacksNewSchema(
+                $namespace,
+                $schema,
+                $file
+            ),
+            $this->getDOM(
+                $this->hasKnownSchemaLocation($file)
+                    ? $this->getKnownSchemaLocation($file)
+                    : $file
+            )->documentElement,
+            $schema
+        );
+    }
+
+    protected function loadImportFresh(
+        string $namespace,
+        Schema $schema,
+        string $file
+    ): Closure {
+        return function () use ($namespace, $schema, $file): void {
+            foreach (
+                $this->loadImportFreshCallbacks(
+                    $namespace,
+                    $schema,
+                    $file
+                ) as $callback
+            ) {
+                $callback();
+            }
+        };
+    }
 }
