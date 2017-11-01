@@ -242,7 +242,7 @@ class SchemaReader
 
     protected function loadGroup(Schema $schema, DOMElement $node): Closure
     {
-        $group = $this->loadGroupBeforeCheckingChildNodes(
+        $group = static::loadGroupBeforeCheckingChildNodes(
             $schema,
             $node
         );
