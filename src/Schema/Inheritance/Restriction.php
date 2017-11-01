@@ -62,8 +62,7 @@ class Restriction extends Base
                 $restriction->setBase($restType);
             };
 
-            Type::loadTypeWithCallbackOnChildNodes(
-                $reader,
+            $reader->loadTypeWithCallbackOnChildNodes(
                 $type->getSchema(),
                 $node,
                 $addCallback

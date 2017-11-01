@@ -397,8 +397,7 @@ class SchemaReader
                 $type->setList($list);
             };
 
-            Type::loadTypeWithCallbackOnChildNodes(
-                $this,
+            $this->loadTypeWithCallbackOnChildNodes(
                 $type->getSchema(),
                 $node,
                 $addCallback
@@ -423,8 +422,7 @@ class SchemaReader
             $type->addUnion($unType);
         };
 
-        Type::loadTypeWithCallbackOnChildNodes(
-            $this,
+        $this->loadTypeWithCallbackOnChildNodes(
             $type->getSchema(),
             $node,
             $addCallback
@@ -1078,8 +1076,7 @@ class SchemaReader
                         ]
                     )
                 ) {
-                    Type::loadTypeWithCallback(
-                        $this,
+                    $this->loadTypeWithCallback(
                         $element->getSchema(),
                         $childNode,
                         function (Type $type) use ($element): void {
@@ -1291,5 +1288,55 @@ class SchemaReader
                 $childNode
             );
         };
+    }
+
+    public function loadTypeWithCallbackOnChildNodes(
+        Schema $schema,
+        DOMElement $node,
+        Closure $callback
+    ): void {
+        SchemaReader::againstDOMNodeList(
+            $node,
+            function (
+                DOMElement $node,
+                DOMElement $childNode
+            ) use (
+                $schema,
+                $callback
+            ): void {
+                $this->loadTypeWithCallback(
+                    $schema,
+                    $childNode,
+                    $callback
+                );
+            }
+        );
+    }
+
+    public function loadTypeWithCallback(
+        Schema $schema,
+        DOMElement $childNode,
+        Closure $callback
+    ): void {
+        $methods = [
+            'complexType' => 'loadComplexType',
+            'simpleType' => 'loadSimpleType',
+        ];
+
+        /**
+         * @var Closure|null
+         */
+        $func = $this->maybeCallMethod(
+            $methods,
+            $childNode->localName,
+            $childNode,
+            $schema,
+            $childNode,
+            $callback
+        );
+
+        if ($func instanceof Closure) {
+            call_user_func($func);
+        }
     }
 }
