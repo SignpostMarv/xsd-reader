@@ -11,6 +11,7 @@ use DOMNode;
 use GoetasWebservices\XML\XSDReader\Exception\IOException;
 use GoetasWebservices\XML\XSDReader\Exception\TypeException;
 use GoetasWebservices\XML\XSDReader\Schema\Attribute\Attribute;
+use GoetasWebservices\XML\XSDReader\Schema\Attribute\AttributeContainer;
 use GoetasWebservices\XML\XSDReader\Schema\Attribute\AttributeItem;
 use GoetasWebservices\XML\XSDReader\Schema\Attribute\AttributeDef;
 use GoetasWebservices\XML\XSDReader\Schema\Attribute\Group as AttributeGroup;
@@ -387,18 +388,17 @@ class SchemaReader
         ];
         $methods = [
             'attribute' => [
-                [$type, 'addAttributeFromAttributeOrRef'],
+                [$this, 'addAttributeFromAttributeOrRef'],
                 [
-                    $this,
+                    $type,
                     $childNode,
                     $schema,
                     $node,
                 ],
             ],
             'attributeGroup' => [
-                (AttributeGroup::class.'::findSomethingLikeThis'),
+                [$this, 'findSomethingLikeAttributeGroup'],
                 [
-                    $this,
                     $schema,
                     $node,
                     $childNode,
@@ -514,18 +514,17 @@ class SchemaReader
                 ];
                 $methods = [
                     'attribute' => [
-                        [$type, 'addAttributeFromAttributeOrRef'],
+                        [$this, 'addAttributeFromAttributeOrRef'],
                         [
-                            $this,
+                            $type,
                             $childNode,
                             $type->getSchema(),
                             $node,
                         ],
                     ],
                     'attributeGroup' => [
-                        (AttributeGroup::class.'::findSomethingLikeThis'),
+                        [$this, 'findSomethingLikeAttributeGroup'],
                         [
-                            $this,
                             $type->getSchema(),
                             $node,
                             $childNode,
@@ -1050,14 +1049,8 @@ class SchemaReader
         $schema->setSchemaThingsFromNode($node, $parent);
         $functions = array();
 
-        $schemaReaderMethods = [
-            'attributeGroup' => (
-                AttributeGroup::class.
-                '::loadAttributeGroup'
-            ),
-        ];
-
         $thisMethods = [
+            'attributeGroup' => [$this, 'loadAttributeGroup'],
             'include' => [$this, 'loadImport'],
             'import' => [$this, 'loadImport'],
             'element' => [$this, 'loadElementDef'],
@@ -1073,7 +1066,6 @@ class SchemaReader
                 DOMElement $node,
                 DOMElement $childNode
             ) use (
-                $schemaReaderMethods,
                 $schema,
                 $thisMethods,
                 &$functions
@@ -1086,14 +1078,6 @@ class SchemaReader
                     [],
                     [],
                     [
-                        [
-                            $schemaReaderMethods,
-                            [
-                                $this,
-                                $schema,
-                                $childNode,
-                            ],
-                        ],
                         [
                             $thisMethods,
                             [
@@ -1633,5 +1617,124 @@ class SchemaReader
         }
 
         return $ref;
+    }
+
+    /**
+     * @return \Closure
+     */
+    public function loadAttributeGroup(
+        Schema $schema,
+        DOMElement $node
+    ) {
+        $attGroup = new AttributeGroup($schema, $node->getAttribute('name'));
+        $attGroup->setDoc(self::getDocumentation($node));
+        $schema->addAttributeGroup($attGroup);
+
+        return function () use ($schema, $node, $attGroup) {
+            SchemaReader::againstDOMNodeList(
+                $node,
+                function (
+                    DOMElement $node,
+                    DOMElement $childNode
+                ) use (
+                    $schema,
+                    $attGroup
+                ) {
+                    switch ($childNode->localName) {
+                        case 'attribute':
+                            $attribute = $this->getAttributeFromAttributeOrRef(
+                                $childNode,
+                                $schema,
+                                $node
+                            );
+                            $attGroup->addAttribute($attribute);
+                            break;
+                        case 'attributeGroup':
+                            $this->findSomethingLikeAttributeGroup(
+                                $schema,
+                                $node,
+                                $childNode,
+                                $attGroup
+                            );
+                            break;
+                    }
+                }
+            );
+        };
+    }
+
+    /**
+     * @return AttributeItem
+     */
+    public function getAttributeFromAttributeOrRef(
+        DOMElement $childNode,
+        Schema $schema,
+        DOMElement $node
+    ) {
+        if ($childNode->hasAttribute('ref')) {
+            /**
+             * @var AttributeItem
+             */
+            $attribute = $this->findSomething('findAttribute', $schema, $node, $childNode->getAttribute('ref'));
+        } else {
+            /**
+             * @var Attribute
+             */
+            $attribute = $this->loadAttribute($schema, $childNode);
+        }
+
+        return $attribute;
+    }
+
+    /**
+     * @return Attribute
+     */
+    public function loadAttribute(
+        Schema $schema,
+        DOMElement $node
+    ) {
+        $attribute = new Attribute($schema, $node->getAttribute('name'));
+        $attribute->setDoc(self::getDocumentation($node));
+        $this->fillItem($attribute, $node);
+
+        if ($node->hasAttribute('nillable')) {
+            $attribute->setNil($node->getAttribute('nillable') == 'true');
+        }
+        if ($node->hasAttribute('form')) {
+            $attribute->setQualified($node->getAttribute('form') == 'qualified');
+        }
+        if ($node->hasAttribute('use')) {
+            $attribute->setUse($node->getAttribute('use'));
+        }
+
+        return $attribute;
+    }
+
+    public function addAttributeFromAttributeOrRef(
+        BaseComplexType $type,
+        DOMElement $childNode,
+        Schema $schema,
+        DOMElement $node
+    ) {
+        $attribute = $this->getAttributeFromAttributeOrRef(
+            $childNode,
+            $schema,
+            $node
+        );
+
+        $type->addAttribute($attribute);
+    }
+
+    public function findSomethingLikeAttributeGroup(
+        Schema $schema,
+        DOMElement $node,
+        DOMElement $childNode,
+        AttributeContainer $addToThis
+    ) {
+        /**
+         * @var AttributeItem
+         */
+        $attribute = $this->findSomething('findAttributeGroup', $schema, $node, $childNode->getAttribute('ref'));
+        $addToThis->addAttribute($attribute);
     }
 }

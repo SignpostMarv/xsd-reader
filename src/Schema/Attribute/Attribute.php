@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace GoetasWebservices\XML\XSDReader\Schema\Attribute;
 
-use DOMElement;
 use GoetasWebservices\XML\XSDReader\Schema\Item;
-use GoetasWebservices\XML\XSDReader\Schema\Schema;
-use GoetasWebservices\XML\XSDReader\SchemaReader;
 
 class Attribute extends Item implements AttributeSingle
 {
@@ -115,48 +112,5 @@ class Attribute extends Item implements AttributeSingle
         $this->use = $use;
 
         return $this;
-    }
-
-    public static function loadAttribute(
-        SchemaReader $schemaReader,
-        Schema $schema,
-        DOMElement $node
-    ): Attribute {
-        $attribute = new self($schema, $node->getAttribute('name'));
-        $attribute->setDoc(SchemaReader::getDocumentation($node));
-        $schemaReader->fillItem($attribute, $node);
-
-        if ($node->hasAttribute('nillable')) {
-            $attribute->setNil($node->getAttribute('nillable') == 'true');
-        }
-        if ($node->hasAttribute('form')) {
-            $attribute->setQualified($node->getAttribute('form') == 'qualified');
-        }
-        if ($node->hasAttribute('use')) {
-            $attribute->setUse($node->getAttribute('use'));
-        }
-
-        return $attribute;
-    }
-
-    public static function getAttributeFromAttributeOrRef(
-        SchemaReader $schemaReader,
-        DOMElement $childNode,
-        Schema $schema,
-        DOMElement $node
-    ): AttributeItem {
-        if ($childNode->hasAttribute('ref')) {
-            /**
-             * @var AttributeItem
-             */
-            $attribute = $schemaReader->findSomething('findAttribute', $schema, $node, $childNode->getAttribute('ref'));
-        } else {
-            /**
-             * @var Attribute
-             */
-            $attribute = self::loadAttribute($schemaReader, $schema, $childNode);
-        }
-
-        return $attribute;
     }
 }
