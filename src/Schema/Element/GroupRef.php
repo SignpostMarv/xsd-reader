@@ -94,17 +94,4 @@ class GroupRef extends Group implements InterfaceSetMinMax
     {
         throw new BadMethodCallException("Can't add an element for a ref group");
     }
-
-    public static function loadGroupRef(
-        Group $referenced,
-        DOMElement $node
-    ): self {
-        $ref = new self($referenced);
-        $ref->setDoc(SchemaReader::getDocumentation($node));
-
-        SchemaReader::maybeSetMax($ref, $node);
-        SchemaReader::maybeSetMin($ref, $node);
-
-        return $ref;
-    }
 }

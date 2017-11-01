@@ -245,6 +245,19 @@ class SchemaReader
         return Group::loadGroup($this, $schema, $node);
     }
 
+    public function loadGroupRef(
+        Group $referenced,
+        DOMElement $node
+    ): GroupRef {
+        $ref = new GroupRef($referenced);
+        $ref->setDoc(SchemaReader::getDocumentation($node));
+
+        SchemaReader::maybeSetMax($ref, $node);
+        SchemaReader::maybeSetMin($ref, $node);
+
+        return $ref;
+    }
+
     protected function loadComplexTypeBeforeCallbackCallback(
         Schema $schema,
         DOMElement $node
