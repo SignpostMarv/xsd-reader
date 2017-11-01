@@ -190,7 +190,7 @@ class SchemaReader
                 $node,
                 $childNode->getAttribute('ref')
             );
-            $element = ElementRef::loadElementRef(
+            $element = static::loadElementRef(
                 $referencedElement,
                 $childNode
             );
@@ -1586,5 +1586,24 @@ class SchemaReader
                 $callback();
             }
         };
+    }
+
+    public static function loadElementRef(
+        ElementDef $referenced,
+        DOMElement $node
+    ): ElementRef {
+        $ref = new ElementRef($referenced);
+        $ref->setDoc(SchemaReader::getDocumentation($node));
+
+        SchemaReader::maybeSetMax($ref, $node);
+        SchemaReader::maybeSetMin($ref, $node);
+        if ($node->hasAttribute('nillable')) {
+            $ref->setNil($node->getAttribute('nillable') == 'true');
+        }
+        if ($node->hasAttribute('form')) {
+            $ref->setQualified($node->getAttribute('form') == 'qualified');
+        }
+
+        return $ref;
     }
 }
