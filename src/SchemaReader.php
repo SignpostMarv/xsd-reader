@@ -236,7 +236,7 @@ class SchemaReader
             $childNode->getAttribute('ref')
         );
 
-        $group = GroupRef::loadGroupRef($referencedGroup, $childNode);
+        $group = $this->loadGroupRef($referencedGroup, $childNode);
         $elementContainer->addElement($group);
     }
 
@@ -1439,7 +1439,6 @@ class SchemaReader
     }
 
     protected function loadImportFreshKeys(
-        SchemaReader $this,
         string $namespace,
         string $file
     ): array {
@@ -1469,9 +1468,9 @@ class SchemaReader
         /**
          * @var Schema $newSchema
          */
-        $newSchema = self::setLoadedFile(
+        $newSchema = Schema::setLoadedFile(
             $file,
-            ($namespace ? new self() : $schema)
+            ($namespace ? new Schema() : $schema)
         );
 
         if ($namespace) {
