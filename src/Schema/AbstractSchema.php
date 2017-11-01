@@ -30,7 +30,7 @@ abstract class AbstractSchema
     protected $attributesQualification = false;
 
     /**
-     * @var ?string
+     * @var null|string
      */
     protected $targetNamespace;
 
