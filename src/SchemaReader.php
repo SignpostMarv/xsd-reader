@@ -34,6 +34,7 @@ use GoetasWebservices\XML\XSDReader\Schema\Type\ComplexType;
 use GoetasWebservices\XML\XSDReader\Schema\Type\ComplexTypeSimpleContent;
 use GoetasWebservices\XML\XSDReader\Schema\Type\SimpleType;
 use GoetasWebservices\XML\XSDReader\Schema\Type\Type;
+use GoetasWebservices\XML\XSDReader\Utils\UrlUtils;
 use RuntimeException;
 
 class SchemaReader
@@ -916,8 +917,6 @@ class SchemaReader
         $functions = array();
 
         $schemaReaderMethods = [
-            'include' => (Schema::class.'::loadImport'),
-            'import' => (Schema::class.'::loadImport'),
             'attributeGroup' => (
                 AttributeGroup::class.
                 '::loadAttributeGroup'
@@ -925,6 +924,8 @@ class SchemaReader
         ];
 
         $thisMethods = [
+            'include' => [$this, 'loadImport'],
+            'import' => [$this, 'loadImport'],
             'element' => [$this, 'loadElementDef'],
             'attribute' => [$this, 'loadAttributeDef'],
             'group' => [$this, 'loadGroup'],
