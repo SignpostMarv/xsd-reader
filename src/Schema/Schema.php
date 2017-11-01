@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace GoetasWebservices\XML\XSDReader\Schema;
 
-use Closure;
 use DOMElement;
 use RuntimeException;
 use GoetasWebservices\XML\XSDReader\SchemaReader;
@@ -17,7 +16,6 @@ use GoetasWebservices\XML\XSDReader\Schema\Exception\TypeNotFoundException;
 use GoetasWebservices\XML\XSDReader\Schema\Exception\SchemaException;
 use GoetasWebservices\XML\XSDReader\Schema\Attribute\AttributeItem;
 use GoetasWebservices\XML\XSDReader\Schema\Attribute\AttributeDef;
-use GoetasWebservices\XML\XSDReader\Utils\UrlUtils;
 
 class Schema
 {
