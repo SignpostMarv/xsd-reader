@@ -188,11 +188,17 @@ class Schema
         $this->attributesQualification = $attributesQualification;
     }
 
+    /**
+    * @return null|string
+    */
     public function getTargetNamespace(): ? string
     {
         return $this->targetNamespace;
     }
 
+    /**
+    * @param null|string $targetNamespace
+    */
     public function setTargetNamespace(? string $targetNamespace): void
     {
         $this->targetNamespace = $targetNamespace;
