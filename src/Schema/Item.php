@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace GoetasWebservices\XML\XSDReader\Schema;
 
-use GoetasWebservices\XML\XSDReader\Schema\NamedItemTrait;
 use GoetasWebservices\XML\XSDReader\Schema\Type\Type;
 
 abstract class Item implements SchemaItem
