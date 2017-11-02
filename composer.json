@@ -47,7 +47,7 @@
             "phpstan analyse -l7 src",
             "psalm",
             "phpcpd ./src/",
-            "nice -n 19 phan"
+            "nice -n 19 phan --progress-bar"
         ]
     }
 }
