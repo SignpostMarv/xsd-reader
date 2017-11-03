@@ -1175,7 +1175,7 @@ class SchemaReader
         return $out;
     }
 
-    public function fillItem(Item $element, DOMElement $node): void
+    private function fillItem(Item $element, DOMElement $node): void
     {
         /**
          * @var bool
