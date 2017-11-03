@@ -1285,7 +1285,7 @@ class SchemaReader
         return $out;
     }
 
-    public function readNode(
+    private function readNode(
         DOMElement $node,
         string $file = 'schema.xsd'
     ): Schema {
