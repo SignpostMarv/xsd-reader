@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace GoetasWebservices\XML\XSDReader\Schema;
 
 use DOMElement;
-use RuntimeException;
 use GoetasWebservices\XML\XSDReader\SchemaReader;
 use GoetasWebservices\XML\XSDReader\Schema\Type\Type;
 use GoetasWebservices\XML\XSDReader\Schema\Attribute\Group as AttributeGroup;
@@ -423,43 +422,6 @@ class Schema
         $out = $this->findSomething('getAttributeGroup', $name, $namespace);
 
         return $out;
-    }
-
-    /**
-     * @var Schema[]
-     */
-    protected static $loadedFiles = array();
-
-    public static function hasLoadedFile(string ...$keys): bool
-    {
-        foreach ($keys as $key) {
-            if (isset(self::$loadedFiles[$key])) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @throws RuntimeException if loaded file not found
-     */
-    public static function getLoadedFile(string ...$keys): self
-    {
-        foreach ($keys as $key) {
-            if (isset(self::$loadedFiles[$key])) {
-                return self::$loadedFiles[$key];
-            }
-        }
-
-        throw new RuntimeException('Loaded file was not found!');
-    }
-
-    public static function setLoadedFile(string $key, self $schema): self
-    {
-        self::$loadedFiles[$key] = $schema;
-
-        return $schema;
     }
 
     public function setSchemaThingsFromNode(
