@@ -1776,7 +1776,7 @@ class SchemaReader
         DOMElement $node,
         Schema $parent = null
     ): void {
-        $schema->setDoc(SchemaReader::getDocumentation($node));
+        $schema->setDoc(self::getDocumentation($node));
 
         if ($node->hasAttribute('targetNamespace')) {
             $schema->setTargetNamespace($node->getAttribute('targetNamespace'));
@@ -1785,6 +1785,6 @@ class SchemaReader
         }
         $schema->setElementsQualification($node->getAttribute('elementFormDefault') == 'qualified');
         $schema->setAttributesQualification($node->getAttribute('attributeFormDefault') == 'qualified');
-        $schema->setDoc(SchemaReader::getDocumentation($node));
+        $schema->setDoc(self::getDocumentation($node));
     }
 }
