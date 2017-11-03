@@ -9,12 +9,12 @@ use GoetasWebservices\XML\XSDReader\Schema\Item;
 class Attribute extends Item implements AttributeSingle
 {
     /**
-     * @var self|null
+     * @var string|null
      */
     protected $fixed;
 
     /**
-     * @var self|null
+     * @var string|null
      */
     protected $default;
 
@@ -34,9 +34,9 @@ class Attribute extends Item implements AttributeSingle
     protected $use = self::USE_OPTIONAL;
 
     /**
-     * @return self|null
+     * @return string|null
      */
-    public function getFixed(): ? self
+    public function getFixed(): ? string
     {
         return $this->fixed;
     }
@@ -44,7 +44,7 @@ class Attribute extends Item implements AttributeSingle
     /**
      * @return $this
      */
-    public function setFixed(Attribute $fixed): self
+    public function setFixed(string $fixed): self
     {
         $this->fixed = $fixed;
 
@@ -52,9 +52,8 @@ class Attribute extends Item implements AttributeSingle
     }
 
     /**
-     * @return self|null
-     */
-    public function getDefault(): ? self
+     * @return static|null     */
+    public function getDefault(): ? string
     {
         return $this->default;
     }
@@ -62,7 +61,7 @@ class Attribute extends Item implements AttributeSingle
     /**
      * @return $this
      */
-    public function setDefault(Attribute $default): self
+    public function setDefault(self $default): self
     {
         $this->default = $default;
 

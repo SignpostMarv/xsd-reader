@@ -189,16 +189,16 @@ class Schema
     }
 
     /**
-    * @return null|string
-    */
+     * @return null|string
+     */
     public function getTargetNamespace(): ? string
     {
         return $this->targetNamespace;
     }
 
     /**
-    * @param null|string $targetNamespace
-    */
+     * @param null|string $targetNamespace
+     */
     public function setTargetNamespace(? string $targetNamespace): void
     {
         $this->targetNamespace = $targetNamespace;
@@ -264,7 +264,7 @@ class Schema
         $this->elements[$element->getName()] = $element;
     }
 
-    public function addSchema(Schema $schema, string $namespace = null): void
+    public function addSchema(self $schema, string $namespace = null): void
     {
         if ($namespace !== null) {
             if ($schema->getTargetNamespace() !== $namespace) {
@@ -444,7 +444,7 @@ class Schema
     /**
      * @throws RuntimeException if loaded file not found
      */
-    public static function getLoadedFile(string ...$keys): Schema
+    public static function getLoadedFile(string ...$keys): self
     {
         foreach ($keys as $key) {
             if (isset(self::$loadedFiles[$key])) {
@@ -455,7 +455,7 @@ class Schema
         throw new RuntimeException('Loaded file was not found!');
     }
 
-    public static function setLoadedFile(string $key, Schema $schema): Schema
+    public static function setLoadedFile(string $key, self $schema): self
     {
         self::$loadedFiles[$key] = $schema;
 
@@ -464,7 +464,7 @@ class Schema
 
     public function setSchemaThingsFromNode(
         DOMElement $node,
-        Schema $parent = null
+        self $parent = null
     ): void {
         $this->setDoc(SchemaReader::getDocumentation($node));
 

@@ -41,7 +41,7 @@ class SimpleType extends Type
     /**
      * @return $this
      */
-    public function addUnion(SimpleType $type): self
+    public function addUnion(self $type): self
     {
         $this->unions[] = $type;
 
@@ -56,7 +56,7 @@ class SimpleType extends Type
         return $this->unions;
     }
 
-    public function getList(): ? SimpleType
+    public function getList(): ? self
     {
         return $this->list;
     }
@@ -64,7 +64,7 @@ class SimpleType extends Type
     /**
      * @return $this
      */
-    public function setList(SimpleType $list)
+    public function setList(self $list)
     {
         $this->list = $list;
 
