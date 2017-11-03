@@ -29,7 +29,7 @@ class AttributeDef extends Item implements AttributeItem
     /**
      * @return $this
      */
-    public function setFixed(self $fixed): self
+    public function setFixed(string $fixed): self
     {
         $this->fixed = $fixed;
 
@@ -37,7 +37,7 @@ class AttributeDef extends Item implements AttributeItem
     }
 
     /**
-     * @return static|null
+     * @return string|null
      */
     public function getDefault(): ? string
     {

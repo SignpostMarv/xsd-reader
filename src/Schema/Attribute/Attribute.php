@@ -52,7 +52,8 @@ class Attribute extends Item implements AttributeSingle
     }
 
     /**
-     * @return static|null     */
+     * @return string|null
+     */
     public function getDefault(): ? string
     {
         return $this->default;
@@ -61,7 +62,7 @@ class Attribute extends Item implements AttributeSingle
     /**
      * @return $this
      */
-    public function setDefault(self $default): self
+    public function setDefault(string $default): self
     {
         $this->default = $default;
 
