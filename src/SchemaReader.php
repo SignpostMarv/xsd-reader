@@ -236,10 +236,12 @@ class SchemaReader
              * @var string[]
              */
             $methods = $methods;
-            $this->maybeCallMethodAgainstDOMNodeList(
+            static::againstDOMNodeList(
                 $node,
-                $group,
-                $methods
+                $this->CallbackGeneratorMaybeCallMethodAgainstDOMNodeList(
+                    $group,
+                    $methods
+                )
             );
         };
     }
@@ -611,7 +613,13 @@ class SchemaReader
          */
         $methods = $methods;
 
-        $this->maybeCallMethodAgainstDOMNodeList($node, $type, $methods);
+        static::againstDOMNodeList(
+            $node,
+            $this->CallbackGeneratorMaybeCallMethodAgainstDOMNodeList(
+                $type,
+                $methods
+            )
+        );
     }
 
     private function fillItemNonLocalType(
@@ -1175,20 +1183,6 @@ class SchemaReader
                 );
             }
         }
-    }
-
-    private function maybeCallMethodAgainstDOMNodeList(
-        DOMElement $node,
-        SchemaItem $type,
-        array $methods
-    ): void {
-        static::againstDOMNodeList(
-            $node,
-            $this->CallbackGeneratorMaybeCallMethodAgainstDOMNodeList(
-                $type,
-                $methods
-            )
-        );
     }
 
     /**
