@@ -731,28 +731,14 @@ class SchemaReader
             $callbackCallback,
             $callback
         ): void {
-            $this->runCallbackAgainstDOMNodeList(
-                $type,
-                $node,
-                $callbackCallback,
-                $callback
-            );
-        };
-    }
-
-    private function runCallbackAgainstDOMNodeList(
-        Type $type,
-        DOMElement $node,
-        Closure $againstNodeList,
-        Closure $callback = null
-    ): void {
         $this->fillTypeNode($type, $node, true);
 
-        static::againstDOMNodeList($node, $againstNodeList);
+        static::againstDOMNodeList($node, $callbackCallback);
 
         if ($callback) {
             call_user_func($callback, $type);
         }
+        };
     }
 
     private function maybeLoadExtensionFromBaseComplexType(
