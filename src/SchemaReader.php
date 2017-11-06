@@ -731,13 +731,13 @@ class SchemaReader
             $callbackCallback,
             $callback
         ): void {
-        $this->fillTypeNode($type, $node, true);
+            $this->fillTypeNode($type, $node, true);
 
-        static::againstDOMNodeList($node, $callbackCallback);
+            static::againstDOMNodeList($node, $callbackCallback);
 
-        if ($callback) {
-            call_user_func($callback, $type);
-        }
+            if ($callback) {
+                call_user_func($callback, $type);
+            }
         };
     }
 
