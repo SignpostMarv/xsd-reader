@@ -341,7 +341,7 @@ class SchemaReader
                 ) use (
                     $schema,
                     $type
-                ) {
+                ) : void {
                     $this->loadComplexTypeFromChildNode(
                         $type,
                         $node,
@@ -416,7 +416,7 @@ class SchemaReader
             $schema->addType($type);
         }
 
-        return function () use ($type, $node, $callback) {
+        return function () use ($type, $node, $callback) : void {
             $this->fillTypeNode($type, $node, true);
 
             static::againstDOMNodeList(
