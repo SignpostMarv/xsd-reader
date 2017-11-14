@@ -330,25 +330,31 @@ class SchemaReader
     ): Closure {
         $type = $this->loadComplexTypeBeforeCallbackCallback($schema, $node);
 
-        return $this->makeCallbackCallback(
-            $type,
-            $node,
-            function (
-                DOMElement $node,
-                DOMElement $childNode
-            ) use (
-                $schema,
-                $type
-            ): void {
-                $this->loadComplexTypeFromChildNode(
-                    $type,
-                    $node,
-                    $childNode,
-                    $schema
-                );
-            },
-            $callback
-        );
+        return function () use ($type, $node, $schema, $callback) : void {
+            $this->fillTypeNode($type, $node, true);
+
+            static::againstDOMNodeList(
+                $node,
+                function (
+                    DOMElement $node,
+                    DOMElement $childNode
+                ) use (
+                    $schema,
+                    $type
+                ) {
+                    $this->loadComplexTypeFromChildNode(
+                        $type,
+                        $node,
+                        $childNode,
+                        $schema
+                    );
+                }
+            );
+
+            if ($callback) {
+                call_user_func($callback, $type);
+            }
+        };
     }
 
     private function loadComplexTypeFromChildNode(
@@ -410,18 +416,24 @@ class SchemaReader
             $schema->addType($type);
         }
 
-        return $this->makeCallbackCallback(
-            $type,
-            $node,
-            $this->CallbackGeneratorMaybeCallMethodAgainstDOMNodeList(
-                $type,
-                [
-                    'union' => 'loadUnion',
-                    'list' => 'loadList',
-                ]
-            ),
-            $callback
-        );
+        return function () use ($type, $node, $callback) {
+            $this->fillTypeNode($type, $node, true);
+
+            static::againstDOMNodeList(
+                $node,
+                $this->CallbackGeneratorMaybeCallMethodAgainstDOMNodeList(
+                    $type,
+                    [
+                        'union' => 'loadUnion',
+                        'list' => 'loadList',
+                    ]
+                )
+            );
+
+            if ($callback) {
+                call_user_func($callback, $type);
+            }
+        };
     }
 
     private function loadList(SimpleType $type, DOMElement $node): void
@@ -720,35 +732,6 @@ class SchemaReader
 
         return $out;
     }
-
-    /**
-     * @param Closure|null $callback
-     *
-     * @return Closure
-     */
-    private function makeCallbackCallback(
-        Type $type,
-        DOMElement $node,
-        Closure $callbackCallback,
-        Closure $callback = null
-    ): Closure {
-        return function (
-        ) use (
-            $type,
-            $node,
-            $callbackCallback,
-            $callback
-        ): void {
-            $this->fillTypeNode($type, $node, true);
-
-            static::againstDOMNodeList($node, $callbackCallback);
-
-            if ($callback) {
-                call_user_func($callback, $type);
-            }
-        };
-    }
-
     private function maybeLoadExtensionFromBaseComplexType(
         Type $type,
         DOMElement $childNode
