@@ -225,23 +225,19 @@ class SchemaReader
             $schema,
             $node
         );
-        static $methods = [
-            'sequence' => 'loadSequence',
-            'choice' => 'loadSequence',
-            'all' => 'loadSequence',
-        ];
 
-        return function () use ($group, $node, $methods): void {
-            /**
-             * @var string[]
-             */
-            $methods = $methods;
+        return function () use ($group, $node) : void {
             static::againstDOMNodeList(
                 $node,
-                $this->CallbackGeneratorMaybeCallMethodAgainstDOMNodeList(
-                    $group,
-                    $methods
-                )
+                function (DOMelement $node, DOMElement $childNode) use ($group) : void {
+                    switch ($childNode->localName) {
+                        case 'sequence':
+                        case 'choice':
+                        case 'all':
+                            $this->loadSequence($group, $childNode);
+                            break;
+                    }
+                }
             );
         };
     }
@@ -421,13 +417,16 @@ class SchemaReader
 
             static::againstDOMNodeList(
                 $node,
-                $this->CallbackGeneratorMaybeCallMethodAgainstDOMNodeList(
-                    $type,
-                    [
-                        'union' => 'loadUnion',
-                        'list' => 'loadList',
-                    ]
-                )
+                function (DOMElement $node, DOMElement $childNode) use ($type) : void {
+                    switch ($childNode->localName) {
+                        case 'union':
+                            $this->loadUnion($type, $childNode);
+                            break;
+                        case 'list':
+                            $this->loadList($type, $childNode);
+                            break;
+                    }
+                }
             );
 
             if ($callback) {
@@ -613,24 +612,25 @@ class SchemaReader
         if ($checkAbstract) {
             $type->setAbstract($node->getAttribute('abstract') === 'true' || $node->getAttribute('abstract') === '1');
         }
-        static $methods = [
-            'restriction' => 'loadRestriction',
-            'extension' => 'maybeLoadExtensionFromBaseComplexType',
-            'simpleContent' => 'fillTypeNode',
-            'complexContent' => 'fillTypeNode',
-        ];
-
-        /**
-         * @var string[]
-         */
-        $methods = $methods;
 
         static::againstDOMNodeList(
             $node,
-            $this->CallbackGeneratorMaybeCallMethodAgainstDOMNodeList(
-                $type,
-                $methods
-            )
+            function (DOMElement $node, DOMElement $childNode) use ($type) : void {
+                switch ($childNode->localName) {
+                    case 'restriction':
+                        $this->loadRestriction($type, $childNode);
+                        break;
+                    case 'extension':
+                        if ($type instanceof BaseComplexType) {
+                            $this->loadExtension($type, $childNode);
+                        }
+                        break;
+                    case 'simpleContent':
+                    case 'complexContent':
+                        $this->fillTypeNode($type, $childNode);
+                        break;
+                }
+            }
         );
     }
 
@@ -732,15 +732,6 @@ class SchemaReader
 
         return $out;
     }
-    private function maybeLoadExtensionFromBaseComplexType(
-        Type $type,
-        DOMElement $childNode
-    ): void {
-        if ($type instanceof BaseComplexType) {
-            $this->loadExtension($type, $childNode);
-        }
-    }
-
     const XSD_NS = 'http://www.w3.org/2001/XMLSchema';
 
     const XML_NS = 'http://www.w3.org/XML/1998/namespace';
@@ -1140,32 +1131,6 @@ class SchemaReader
                 );
             }
         }
-    }
-
-    /**
-     * @return Closure
-     */
-    private function CallbackGeneratorMaybeCallMethodAgainstDOMNodeList(
-        SchemaItem $type,
-        array $methods
-    ) {
-        return function (
-            DOMElement $node,
-            DOMElement $childNode
-        ) use (
-            $methods,
-            $type
-        ): void {
-            /**
-             * @var string[]
-             */
-            $methods = $methods;
-            if ($childNode instanceof DOMElement && isset($methods[$childNode->localName])) {
-                $method = $methods[$childNode->localName];
-
-                $this->$method($type, $childNode);
-            }
-        };
     }
 
     private function loadTypeWithCallbackOnChildNodes(
