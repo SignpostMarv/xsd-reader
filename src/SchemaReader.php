@@ -432,14 +432,22 @@ class SchemaReader
             $listType = $this->findSomeSimpleType($type, $node);
             $type->setList($listType);
         } else {
-            $addCallback = function (SimpleType $list) use ($type): void {
-                $type->setList($list);
-            };
-
-            $this->loadTypeWithCallbackOnChildNodes(
-                $type->getSchema(),
+            self::againstDOMNodeList(
                 $node,
-                $addCallback
+                function (
+                    DOMElement $node,
+                    DOMElement $childNode
+                ) use (
+                    $type
+                ): void {
+                    $this->loadTypeWithCallback(
+                        $type->getSchema(),
+                        $childNode,
+                        function (SimpleType $list) use ($type): void {
+                            $type->setList($list);
+                        }
+                    );
+                }
             );
         }
     }
@@ -457,14 +465,22 @@ class SchemaReader
                 $type->addUnion($unionType);
             }
         }
-        $addCallback = function (SimpleType $unType) use ($type): void {
-            $type->addUnion($unType);
-        };
-
-        $this->loadTypeWithCallbackOnChildNodes(
-            $type->getSchema(),
+        self::againstDOMNodeList(
             $node,
-            $addCallback
+            function (
+                DOMElement $node,
+                DOMElement $childNode
+            ) use (
+                $type
+            ): void {
+                $this->loadTypeWithCallback(
+                    $type->getSchema(),
+                    $childNode,
+                    function (SimpleType $unType) use ($type): void {
+                        $type->addUnion($unType);
+                    }
+                );
+            }
         );
     }
 
@@ -536,16 +552,23 @@ class SchemaReader
         if ($node->hasAttribute('base')) {
             $this->findAndSetSomeBase($type, $restriction, $node);
         } else {
-            $addCallback = function (Type $restType) use (
-                $restriction
-            ): void {
-                $restriction->setBase($restType);
-            };
-
-            $this->loadTypeWithCallbackOnChildNodes(
-                $type->getSchema(),
+            self::againstDOMNodeList(
                 $node,
-                $addCallback
+                function (
+                    DOMElement $node,
+                    DOMElement $childNode
+                ) use (
+                    $type,
+                    $restriction
+                ): void {
+                    $this->loadTypeWithCallback(
+                        $type->getSchema(),
+                        $childNode,
+                        function (Type $restType) use ($restriction): void {
+                            $restriction->setBase($restType);
+                        }
+                    );
+                }
             );
         }
         self::againstDOMNodeList(
@@ -1123,29 +1146,6 @@ class SchemaReader
                 );
             }
         }
-    }
-
-    private function loadTypeWithCallbackOnChildNodes(
-        Schema $schema,
-        DOMElement $node,
-        Closure $callback
-    ): void {
-        self::againstDOMNodeList(
-            $node,
-            function (
-                DOMElement $node,
-                DOMElement $childNode
-            ) use (
-                $schema,
-                $callback
-            ): void {
-                $this->loadTypeWithCallback(
-                    $schema,
-                    $childNode,
-                    $callback
-                );
-            }
-        );
     }
 
     private function loadTypeWithCallback(
