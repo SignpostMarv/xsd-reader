@@ -226,10 +226,10 @@ class SchemaReader
             $node
         );
 
-        return function () use ($group, $node) : void {
+        return function () use ($group, $node): void {
             static::againstDOMNodeList(
                 $node,
-                function (DOMelement $node, DOMElement $childNode) use ($group) : void {
+                function (DOMelement $node, DOMElement $childNode) use ($group): void {
                     switch ($childNode->localName) {
                         case 'sequence':
                         case 'choice':
@@ -317,7 +317,7 @@ class SchemaReader
             $schema->addType($type);
         }
 
-        return function () use ($type, $node, $schema, $callback) : void {
+        return function () use ($type, $node, $schema, $callback): void {
             $this->fillTypeNode($type, $node, true);
 
             static::againstDOMNodeList(
@@ -328,7 +328,7 @@ class SchemaReader
                 ) use (
                     $schema,
                     $type
-                ) : void {
+                ): void {
                     $this->loadComplexTypeFromChildNode(
                         $type,
                         $node,
@@ -403,12 +403,12 @@ class SchemaReader
             $schema->addType($type);
         }
 
-        return function () use ($type, $node, $callback) : void {
+        return function () use ($type, $node, $callback): void {
             $this->fillTypeNode($type, $node, true);
 
             static::againstDOMNodeList(
                 $node,
-                function (DOMElement $node, DOMElement $childNode) use ($type) : void {
+                function (DOMElement $node, DOMElement $childNode) use ($type): void {
                     switch ($childNode->localName) {
                         case 'union':
                             $this->loadUnion($type, $childNode);
@@ -606,7 +606,7 @@ class SchemaReader
 
         static::againstDOMNodeList(
             $node,
-            function (DOMElement $node, DOMElement $childNode) use ($type) : void {
+            function (DOMElement $node, DOMElement $childNode) use ($type): void {
                 switch ($childNode->localName) {
                     case 'restriction':
                         $this->loadRestriction($type, $childNode);
@@ -723,6 +723,7 @@ class SchemaReader
 
         return $out;
     }
+
     const XSD_NS = 'http://www.w3.org/2001/XMLSchema';
 
     const XML_NS = 'http://www.w3.org/XML/1998/namespace';
