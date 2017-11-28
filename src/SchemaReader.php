@@ -8,6 +8,8 @@ use Closure;
 use DOMDocument;
 use DOMElement;
 use DOMNode;
+use GoetasWebservices\XML\XSDReader\Documentation\DocumentationReader;
+use GoetasWebservices\XML\XSDReader\Documentation\StandardDocumentationReader;
 use GoetasWebservices\XML\XSDReader\Exception\IOException;
 use GoetasWebservices\XML\XSDReader\Exception\TypeException;
 use GoetasWebservices\XML\XSDReader\Schema\Attribute\Attribute;
@@ -36,13 +38,17 @@ use GoetasWebservices\XML\XSDReader\Schema\Type\ComplexTypeSimpleContent;
 use GoetasWebservices\XML\XSDReader\Schema\Type\SimpleType;
 use GoetasWebservices\XML\XSDReader\Schema\Type\Type;
 use GoetasWebservices\XML\XSDReader\Utils\UrlUtils;
-use RuntimeException;
 
 class SchemaReader
 {
     const XSD_NS = 'http://www.w3.org/2001/XMLSchema';
 
     const XML_NS = 'http://www.w3.org/XML/1998/namespace';
+
+    /**
+     * @var DocumentationReader
+     */
+    private $documentationReader;
 
     /**
      * @var Schema[]
@@ -1200,15 +1206,15 @@ class SchemaReader
                 $callbacks = array_merge($callbacks, $this->schemaNode($schema, $xml->documentElement));
             }
 
-            $globalSchemas[static::XSD_NS]->addType(new SimpleType($globalSchemas[static::XSD_NS], 'anySimpleType'));
-            $globalSchemas[static::XSD_NS]->addType(new SimpleType($globalSchemas[static::XSD_NS], 'anyType'));
+            $globalSchemas[(string) static::XSD_NS]->addType(new SimpleType($globalSchemas[(string) static::XSD_NS], 'anySimpleType'));
+            $globalSchemas[(string) static::XSD_NS]->addType(new SimpleType($globalSchemas[(string) static::XSD_NS], 'anyType'));
 
-            $globalSchemas[static::XML_NS]->addSchema(
-                $globalSchemas[static::XSD_NS],
+            $globalSchemas[(string) static::XML_NS]->addSchema(
+                $globalSchemas[(string) static::XSD_NS],
                 (string) static::XSD_NS
             );
-            $globalSchemas[static::XSD_NS]->addSchema(
-                $globalSchemas[static::XML_NS],
+            $globalSchemas[(string) static::XSD_NS]->addSchema(
+                $globalSchemas[(string) static::XML_NS],
                 (string) static::XML_NS
             );
 
