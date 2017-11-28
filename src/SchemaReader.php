@@ -1076,8 +1076,8 @@ class SchemaReader
         $keys = $this->loadImportFreshKeys($namespace, $file);
 
         /**
-        * @var string $key
-        */
+         * @var string $key
+         */
         foreach ($keys as $key) {
             if (isset($this->loadedFiles[$key])) {
                 $schema->addSchema($this->loadedFiles[$key]);
