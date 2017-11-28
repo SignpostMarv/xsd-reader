@@ -81,6 +81,14 @@ class SchemaReader
         self::XSD_NS => 'http://www.w3.org/2001/XMLSchema.xsd',
     );
 
+    public function __construct(DocumentationReader $documentationReader = null)
+    {
+        if (null === $documentationReader) {
+            $documentationReader = new StandardDocumentationReader();
+        }
+        $this->documentationReader = $documentationReader;
+    }
+
     public function addKnownSchemaLocation(
         string $remote,
         string $local
