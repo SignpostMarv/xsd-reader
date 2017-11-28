@@ -47,7 +47,7 @@ class SchemaReader
     /**
      * @var Schema[]
      */
-    protected static $loadedFiles = array();
+    private $loadedFiles = array();
 
     /**
      * @var string[]
@@ -93,7 +93,7 @@ class SchemaReader
         DOMElement $node
     ): Closure {
         $attGroup = new AttributeGroup($schema, $node->getAttribute('name'));
-        $attGroup->setDoc(self::getDocumentation($node));
+        $attGroup->setDoc($this->getDocumentation($node));
         $schema->addAttributeGroup($attGroup);
 
         return function () use ($schema, $node, $attGroup): void {
@@ -154,7 +154,7 @@ class SchemaReader
         DOMElement $node
     ): Attribute {
         $attribute = new Attribute($schema, $node->getAttribute('name'));
-        $attribute->setDoc(self::getDocumentation($node));
+        $attribute->setDoc($this->getDocumentation($node));
         $this->fillItem($attribute, $node);
 
         if ($node->hasAttribute('nillable')) {
@@ -196,7 +196,7 @@ class SchemaReader
         return $this->loadAttributeOrElementDef($schema, $node, true);
     }
 
-    private static function getDocumentation(DOMElement $node): string
+    private function getDocumentation(DOMElement $node): string
     {
         $doc = '';
         static::againstDOMNodeList(
@@ -208,7 +208,7 @@ class SchemaReader
                 &$doc
             ): void {
                 if ($childNode->localName == 'annotation') {
-                    $doc .= static::getDocumentation($childNode);
+                    $doc .= $this->getDocumentation($childNode);
                 } elseif ($childNode->localName == 'documentation') {
                     $doc .= $childNode->nodeValue;
                 }
@@ -280,7 +280,7 @@ class SchemaReader
         DOMElement $node
     ): GroupRef {
         $ref = new GroupRef($referenced);
-        $ref->setDoc(self::getDocumentation($node));
+        $ref->setDoc($this->getDocumentation($node));
 
         self::maybeSetMax($ref, $node);
         self::maybeSetMin($ref, $node);
@@ -396,10 +396,17 @@ class SchemaReader
                 $node,
                 $childNode->getAttribute('ref')
             );
-            $element = static::loadElementRef(
-                $referencedElement,
-                $childNode
-            );
+            $element = new ElementRef($referencedElement);
+            $element->setDoc($this->getDocumentation($childNode));
+
+            self::maybeSetMax($element, $childNode);
+            self::maybeSetMin($element, $childNode);
+            if ($childNode->hasAttribute('nillable')) {
+                $element->setNil($childNode->getAttribute('nillable') == 'true');
+            }
+            if ($childNode->hasAttribute('form')) {
+                $element->setQualified($childNode->getAttribute('form') == 'qualified');
+            }
         } else {
             $element = $this->loadElement(
                 $elementContainer->getSchema(),
@@ -440,7 +447,7 @@ class SchemaReader
     private function loadGroup(Schema $schema, DOMElement $node): Closure
     {
         $group = new Group($schema, $node->getAttribute('name'));
-        $group->setDoc(self::getDocumentation($node));
+        $group->setDoc($this->getDocumentation($node));
 
         if ($node->hasAttribute('maxOccurs')) {
             /**
@@ -505,7 +512,7 @@ class SchemaReader
 
         $type = $isSimple ? new ComplexTypeSimpleContent($schema, $node->getAttribute('name')) : new ComplexType($schema, $node->getAttribute('name'));
 
-        $type->setDoc(static::getDocumentation($node));
+        $type->setDoc($this->getDocumentation($node));
         if ($node->getAttribute('name')) {
             $schema->addType($type);
         }
@@ -591,7 +598,7 @@ class SchemaReader
         Closure $callback = null
     ): Closure {
         $type = new SimpleType($schema, $node->getAttribute('name'));
-        $type->setDoc(static::getDocumentation($node));
+        $type->setDoc($this->getDocumentation($node));
         if ($node->getAttribute('name')) {
             $schema->addType($type);
         }
@@ -918,7 +925,7 @@ class SchemaReader
                         $childNode->localName,
                         [
                             'value' => $childNode->getAttribute('value'),
-                            'doc' => self::getDocumentation($childNode),
+                            'doc' => $this->getDocumentation($childNode),
                         ]
                     );
                 }
@@ -1055,8 +1062,8 @@ class SchemaReader
         $keys = $this->loadImportFreshKeys($namespace, $file);
 
         foreach ($keys as $key) {
-            if (isset(self::$loadedFiles[$key])) {
-                $schema->addSchema(self::$loadedFiles[$key]);
+            if (isset($this->loadedFiles[$key])) {
+                $schema->addSchema($this->loadedFiles[$key]);
 
                 return function (): void {
                 };
@@ -1096,7 +1103,7 @@ class SchemaReader
         /**
          * @var Schema $newSchema
          */
-        $newSchema = self::setLoadedFile(
+        $newSchema = $this->setLoadedFile(
             $file,
             ($namespace ? new Schema() : $schema)
         );
@@ -1174,7 +1181,7 @@ class SchemaReader
             $callbacks = array();
             $globalSchemas = array();
             foreach (self::$globalSchemaInfo as $namespace => $uri) {
-                self::setLoadedFile(
+                $this->setLoadedFile(
                     $uri,
                     $globalSchemas[$namespace] = $schema = new Schema()
                 );
@@ -1218,7 +1225,7 @@ class SchemaReader
         string $file = 'schema.xsd'
     ): Schema {
         $fileKey = $node->hasAttribute('targetNamespace') ? $this->getNamespaceSpecificFileIndex($file, $node->getAttribute('targetNamespace')) : $file;
-        self::setLoadedFile($fileKey, $rootSchema = new Schema());
+        $this->setLoadedFile($fileKey, $rootSchema = new Schema());
 
         $rootSchema->addSchema($this->getGlobalSchema());
         $callbacks = $this->schemaNode($rootSchema, $node);
@@ -1328,7 +1335,7 @@ class SchemaReader
         DOMElement $node
     ): Element {
         $element = new Element($schema, $node->getAttribute('name'));
-        $element->setDoc(self::getDocumentation($node));
+        $element->setDoc($this->getDocumentation($node));
 
         $this->fillItem($element, $node);
 
@@ -1350,25 +1357,6 @@ class SchemaReader
         }
 
         return $element;
-    }
-
-    private static function loadElementRef(
-        ElementDef $referenced,
-        DOMElement $node
-    ): ElementRef {
-        $ref = new ElementRef($referenced);
-        $ref->setDoc(self::getDocumentation($node));
-
-        self::maybeSetMax($ref, $node);
-        self::maybeSetMin($ref, $node);
-        if ($node->hasAttribute('nillable')) {
-            $ref->setNil($node->getAttribute('nillable') == 'true');
-        }
-        if ($node->hasAttribute('form')) {
-            $ref->setQualified($node->getAttribute('form') == 'qualified');
-        }
-
-        return $ref;
     }
 
     private function addAttributeFromAttributeOrRef(
@@ -1399,9 +1387,9 @@ class SchemaReader
         $addToThis->addAttribute($attribute);
     }
 
-    private static function setLoadedFile(string $key, Schema $schema): Schema
+    private function setLoadedFile(string $key, Schema $schema): Schema
     {
-        self::$loadedFiles[$key] = $schema;
+        $this->loadedFiles[$key] = $schema;
 
         return $schema;
     }
@@ -1411,7 +1399,7 @@ class SchemaReader
         DOMElement $node,
         Schema $parent = null
     ): void {
-        $schema->setDoc(self::getDocumentation($node));
+        $schema->setDoc($this->getDocumentation($node));
 
         if ($node->hasAttribute('targetNamespace')) {
             $schema->setTargetNamespace($node->getAttribute('targetNamespace'));
@@ -1420,6 +1408,6 @@ class SchemaReader
         }
         $schema->setElementsQualification($node->getAttribute('elementFormDefault') == 'qualified');
         $schema->setAttributesQualification($node->getAttribute('attributeFormDefault') == 'qualified');
-        $schema->setDoc(self::getDocumentation($node));
+        $schema->setDoc($this->getDocumentation($node));
     }
 }
