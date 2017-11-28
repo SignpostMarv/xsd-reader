@@ -972,7 +972,7 @@ class SchemaReader
     /**
      * @throws TypeException
      *
-     * @return ElementItem|Group|AttributeItem|AttributeGroup|Type
+     * @return mixed
      */
     private function findSomething(
         string $finder,
@@ -1075,6 +1075,9 @@ class SchemaReader
 
         $keys = $this->loadImportFreshKeys($namespace, $file);
 
+        /**
+        * @var string $key
+        */
         foreach ($keys as $key) {
             if (isset($this->loadedFiles[$key])) {
                 $schema->addSchema($this->loadedFiles[$key]);
@@ -1197,7 +1200,7 @@ class SchemaReader
             foreach (self::$globalSchemaInfo as $namespace => $uri) {
                 $this->setLoadedFile(
                     $uri,
-                    $globalSchemas[$namespace] = $schema = new Schema()
+                    $globalSchemas[(string) $namespace] = $schema = new Schema()
                 );
                 if ($namespace === self::XSD_NS) {
                     $this->globalSchema = $schema;
